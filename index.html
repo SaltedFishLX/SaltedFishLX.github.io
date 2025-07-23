@@ -12,9 +12,10 @@
             background: #f0f0f0;
         }
         img {
-            max-width: 90%;
-            max-height: 90vh;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 100%;          /* 宽度始终占满容器 */
+            height: auto;         /* 高度自动保持比例 */
+            max-height: 75vh;     /* 最大高度不超过视口75% */
+            object-fit: contain;  /* 核心自适应技术 */
         }
     </style>
 </head>
