@@ -1,26 +1,105 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>电子校园卡</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: #f0f0f0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            font-family: system-ui, -apple-system, sans-serif;
         }
+        
+        .container {
+            text-align: center;
+            max-width: 95vw;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .image-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: white;
+            padding: 10px;
+        }
+        
         img {
-            width: 100%;          /* 宽度始终占满容器 */
-            height: auto;         /* 高度自动保持比例 */
-            max-height: 75vh;     /* 最大高度不超过视口75% */
-            object-fit: contain;  /* 核心自适应技术 */
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 75vh;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        
+        img:hover {
+            transform: scale(1.02);
+        }
+        
+        .size-info {
+            color: #7f8c8d;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        /* 设备适配：小屏幕优化 */
+        @media (max-width: 768px) {
+            .image-container {
+                padding: 5px;
+            }
+            h1 {
+                margin-bottom: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 替换your-image.jpg为你的实际文件名 -->
-    <img src="SID.png" alt="我的图片">
+    <div class="container">
+        <h1>电子校园卡</h1>
+        <div class="image-container">
+            <!-- 重要提示：替换your-image.jpg为您的实际文件名 -->
+            <img src="SID.png" 
+                 alt="SID卡"
+                 id="displayed-image">
+        </div>
+        <p class="size-info" id="size-info">自适应加载中...</p>
+    </div>
+
+    <script>
+        // 动态显示图片尺寸信息
+        window.onload = function() {
+            const img = document.getElementById('displayed-image');
+            img.onload = function() {
+                document.getElementById('size-info').textContent = 
+                    `当前分辨率: ${img.naturalWidth}×${img.naturalHeight}px | ` +
+                    `显示尺寸: ${img.width}×${img.height}px`;
+            };
+            
+            // 加载失败时的友好提示
+            img.onerror = function() {
+                img.alt = "图片加载失败";
+                document.getElementById('size-info').innerHTML = 
+                    '<span style="color:#e74c3c">⚠️ 图片加载失败！请检查文件名</span>';
+            };
+        };
+    </script>
 </body>
 </html>
