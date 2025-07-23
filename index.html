@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>电子校园卡</title>
     <style>
         * {
@@ -12,94 +12,74 @@
         }
         
         body {
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 20px;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        
-        .container {
-            text-align: center;
-            max-width: 95vw;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: clamp(1.5rem, 4vw, 2.2rem);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
         }
         
         .image-container {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            background: white;
-            padding: 10px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         img {
-            display: block;
+            object-fit: cover;
             width: 100%;
-            height: auto;
-            max-height: 75vh;
-            object-fit: contain;
-            transition: transform 0.3s ease;
+            height: 100%;
+            display: block;
         }
         
-        img:hover {
-            transform: scale(1.02);
+        /* 添加简单的加载提示 */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.7);
+            font-family: system-ui, sans-serif;
         }
         
-        .size-info {
-            color: #7f8c8d;
-            margin-top: 15px;
-            font-size: 0.9rem;
+        .rotate-hint {
+            display: none;
         }
         
-        /* 设备适配：小屏幕优化 */
-        @media (max-width: 768px) {
+        @media (min-width: 768px) {
             .image-container {
-                padding: 5px;
-            }
-            h1 {
-                margin-bottom: 15px;
+                max-width: 70vh;
+                max-height: 90vh;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>电子校园卡</h1>
-        <div class="image-container">
-            <!-- 重要提示：替换your-image.jpg为您的实际文件名 -->
-            <img src="SID.png" 
-                 alt="SID卡"
-                 id="displayed-image">
-        </div>
-        <p class="size-info" id="size-info">自适应加载中...</p>
+    <div class="image-container">
+        <!-- 将your-image.jpg替换为你的实际图片文件名 -->
+        <img src="SID.png" alt="电子校园卡" id="fullscreen-image">
     </div>
 
     <script>
-        // 动态显示图片尺寸信息
-        window.onload = function() {
-            const img = document.getElementById('displayed-image');
+        document.addEventListener('DOMContentLoaded', function() {
+            const img = document.getElementById('fullscreen-image');
+            const loading = document.querySelector('.loading');
+            
             img.onload = function() {
-                document.getElementById('size-info').textContent = 
-                    `当前分辨率: ${img.naturalWidth}×${img.naturalHeight}px | ` +
-                    `显示尺寸: ${img.width}×${img.height}px`;
+                loading.style.display = 'none';
             };
             
-            // 加载失败时的友好提示
-            img.onerror = function() {
-                img.alt = "图片加载失败";
-                document.getElementById('size-info').innerHTML = 
-                    '<span style="color:#e74c3c">⚠️ 图片加载失败！请检查文件名</span>';
-            };
-        };
+            // 禁用双指缩放（防止意外操作）
+            document.addEventListener('touchmove', function(event) {
+                if(event.touches.length > 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+        });
     </script>
 </body>
 </html>
