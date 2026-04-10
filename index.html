@@ -117,9 +117,16 @@
     .status-col:first-child{border-right:1px solid #d1d1d1}
     .status-title{font-size:16px;color:#000}
     .status-values{
-      margin-top:18px;font-size:16px;line-height:1.15;display:flex;flex-direction:column;gap:6px;
-      min-height:44px;align-items:center;justify-content:flex-start;
-    }
+  margin-top:18px;
+  font-size:16px;
+  line-height:1.15;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  height:48px;              /* 固定高度 */
+  align-items:center;
+  justify-content:center;   /* 居中对齐 */
+  }
     .status-normal{color:var(--green-dark)}
     .balance-toggle-btn{
       margin-top:14px;border:none;background:transparent;padding:0;cursor:pointer;color:var(--green-dark);font:inherit;
