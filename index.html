@@ -1,215 +1,555 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>电子校园卡</title>
-
-<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-
-<style>
-body{margin:0;font-family:PingFang SC;background:#eee}
-.app{max-width:414px;margin:auto;background:#fff;height:100vh;overflow:hidden}
-
-/* 顶部 */
-.lang-row{
-display:flex;justify-content:flex-end;align-items:center;
-padding:20px;
-}
-.toggle{
-width:40px;height:20px;border-radius:20px;background:#ccc;
-position:relative;cursor:pointer;
-}
-.toggle::after{
-content:"";position:absolute;width:18px;height:18px;
-background:#fff;border-radius:50%;top:1px;left:1px;
-transition:.2s;
-}
-.toggle.on{background:#00cf59}
-.toggle.on::after{left:21px}
-
-/* 学校 */
-.location-row{
-display:flex;justify-content:flex-end;
-padding:0 20px;font-size:14px;
-}
-
-/* 卡片 */
-.card{
-margin:20px;
-padding:20px;
-border-radius:20px;
-background:#fff;
-box-shadow:0 5px 15px rgba(0,0,0,.1);
-}
-
-/* 信息 */
-.info{margin-top:20px}
-.info div{margin:8px 0}
-
-/* 状态 */
-.status{
-display:flex;
-justify-content:space-between;
-margin-top:30px;
-}
-
-/* 余额 */
-.balance{
-text-align:center;
-}
-.balance-amount{
-display:none;
-align-items:center;
-justify-content:center;
-gap:2px;
-}
-.balance-amount.show{
-display:flex;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>电子校园卡</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <style>
+    :root{
+      --bg-top:#a8d3cb;
+      --bg-mid:#bbddd8;
+      --bg-bottom:#e7d7cb;
+      --card-bg:rgba(255,255,255,.965);
+      --green:#9ac43b;
+      --green-dark:#96c13d;
+      --gray:#7f7f7f;
+      --brown:#c96d47;
+    }
+    *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+    html,body{margin:0;padding:0;overflow-x:hidden}
+    body{
+      min-height:100vh;
+      background:#ededed;
+      font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+      touch-action:pan-y;
+    }
+    .app{
+      width:100%;
+      max-width:414px;
+      min-height:100vh;
+      margin:0 auto;
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-mid) 48%,var(--bg-bottom) 100%);
+    }
+    .bg-dots{position:absolute;inset:0;pointer-events:none;opacity:.42}
+    .lang-row{
+      position:relative;z-index:1;
+      display:flex;align-items:center;justify-content:flex-end;gap:10px;
+      padding:34px 24px 0;color:rgba(255,255,255,.92);
+    }
+    .lang-label{font-size:10px;line-height:1}
+    .toggle{
+      position:relative;width:68px;height:30px;border-radius:999px;
+      background:#efefef;box-shadow:inset 0 1px 2px rgba(0,0,0,.08),0 3px 8px rgba(0,0,0,.08);
+      cursor:pointer;border:none;padding:0;
+    }
+    .toggle.on{background:#00cf59}
+    .toggle::after{
+      content:"";position:absolute;top:2px;left:2px;
+      width:26px;height:26px;border-radius:50%;
+      background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18);
+      transition:left .18s ease;
+    }
+    .toggle.on::after{left:40px}
+    .location-row{
+      position:relative;z-index:1;
+      margin-top:18px;display:flex;justify-content:flex-end;padding:0 24px;
+      color:rgba(255,255,255,.92);font-family:"PingFang SC","Microsoft YaHei",sans-serif;font-size:15px;
+    }
+    .location-inner{
+      display:flex;align-items:flex-start;gap:6px;max-width:320px;
+      text-align:left;line-height:1.45;transform:translateX(-14px);
+    }
+    .campus-card{
+      position:relative;z-index:1;
+      width:292px;margin:42px auto 0;
+      border-radius:30px;background:rgba(255,255,255,.965);
+      padding:18px 18px 28px;
+      box-shadow:0 8px 24px rgba(0,0,0,.04);
+      overflow:hidden;
+    }
+    .card-lines,.modal-lines{position:absolute;inset:0;pointer-events:none;opacity:.14}
+    .card-top{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .banner-box{position:relative;width:214px;height:54px;overflow:hidden;border-radius:4px}
+    .banner-box img{
+      position:absolute;left:0;top:0;width:206px;height:48px;object-fit:contain;transform-origin:top left;
+    }
+    .banner-fallback,.photo-fallback{
+      width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,0,.03);color:#9aa2b2;font-size:12px;
+    }
+    .small-qr-btn{background:transparent;border:none;padding:0;cursor:pointer;flex-shrink:0}
+    .small-qr-wrap{display:flex;flex-direction:column;align-items:center}
+    .small-qr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
+    .small-qr-grid span{
+      display:block;width:14px;height:14px;border:4px solid #2f2f2f;background:#fff;
+    }
+    .small-qr-grid .special{position:relative}
+    .small-qr-grid .special::before,.small-qr-grid .special::after{
+      content:"";position:absolute;background:#2f2f2f;width:3px;height:3px;
+    }
+    .small-qr-grid .special::before{left:1px;top:1px}
+    .small-qr-grid .special::after{right:1px;bottom:1px}
+    .small-qr-label{
+      margin-top:6px;font-size:14px;line-height:1;
+      color:var(--brown);font-family:"KaiTi","STKaiti",serif;
+    }
+    .photo-wrap{margin-top:24px;display:flex;justify-content:center}
+    .photo-box{
+      width:118px;height:146px;overflow:hidden;background:#f1f1f1;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .photo-box img{width:100%;height:100%;object-fit:cover}
+    .info-block{
+      margin-top:28px;padding-left:34px;color:#000;font-family:"KaiTi","STKaiti",serif;
+    }
+    .info-row{
+      margin-bottom:12px;display:flex;align-items:center;font-size:16px;line-height:1;white-space:nowrap;
+    }
+    .info-row:last-child{margin-bottom:0}
+    .info-label{display:inline-block;width:92px}
+    .status-grid{
+      margin-top:58px;display:grid;grid-template-columns:1fr 1fr;text-align:center;
+      font-family:"KaiTi","STKaiti",serif;
+    }
+    .status-col:first-child{border-right:1px solid #d1d1d1}
+    .status-title{font-size:16px;color:#000}
+    .status-values{
+      margin-top:18px;font-size:16px;line-height:1.15;display:flex;flex-direction:column;gap:6px;
+      min-height:44px;align-items:center;justify-content:flex-start;
+    }
+    .status-normal{color:var(--green-dark)}
+    .balance-toggle-btn{
+      margin-top:14px;border:none;background:transparent;padding:0;cursor:pointer;color:var(--green-dark);font:inherit;
+    }
+    .eye-wrap{display:flex;justify-content:center;color:var(--green-dark)}
+    .balance-amount{
+      margin-top:10px;line-height:1.05;color:#000;
+      display:none;align-items:center;justify-content:center;gap:0;flex-wrap:nowrap;
+      font-family:"KaiTi","STKaiti",serif;
+    }
+    .balance-amount.show{display:flex}
+    .balance-main,.balance-unit{
+      font-weight:500;font-size:inherit;color:inherit;
+      display:inline-block;margin:0;padding:0;
+    }
+    .balance-unit.highlight{color:var(--green-dark)}
+    .decor-pad{
+      position:absolute;right:18px;bottom:10px;width:54px;height:54px;border-radius:50%;
+      background:var(--green);box-shadow:0 6px 14px rgba(0,0,0,.16);
+      display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1;
+    }
+    .decor-pad .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+    .decor-pad .dot{width:4px;height:4px;background:#fff;border-radius:50%}
+    .modal-mask{
+      position:fixed;inset:0;background:rgba(0,0,0,.28);
+      display:none;align-items:flex-start;justify-content:center;padding:20px 14px 14px;z-index:50;
+    }
+    .modal-mask.show{display:flex}
+    .modal-card{
+      position:relative;width:336px;max-width:92vw;margin-top:12px;
+      border-radius:30px;background:#fff;
+      box-shadow:0 20px 40px rgba(0,0,0,.18);
+      padding:18px 18px 26px;overflow:hidden;
+    }
+    .close-btn{
+      position:absolute;right:20px;top:20px;width:46px;height:46px;border-radius:50%;
+      border:3px solid var(--gray);color:var(--gray);background:transparent;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;z-index:2;
+    }
+    .qr-stage{margin-top:54px;display:flex;justify-content:center}
+    .qr-box{
+      width:248px;height:248px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;
+    }
+    #qrCanvas{width:248px;height:248px;display:block;background:#fff;image-rendering:pixelated}
+    .modal-tip{margin-top:18px;text-align:center;font-size:16px;color:#d0d0d0}
+    .refresh-btn{
+      display:block;width:170px;height:54px;margin:22px auto 0;border:none;border-radius:14px;
+      background:var(--green);color:#fff;font-size:19px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);
+    }
+  </style>
 </head>
-
 <body>
-<div class="app">
+  <div class="app">
+    <svg class="bg-dots" viewBox="0 0 414 760" preserveAspectRatio="none">
+      <path d="M52 32C40 130 130 190 290 280" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+      <path d="M362 44C294 120 280 230 206 320" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+      <path d="M376 256C338 392 366 522 332 718" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+      <path d="M74 650C140 548 182 470 278 392" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+    </svg>
 
-<div class="lang-row">
-<button id="langToggle" class="toggle"></button>
-</div>
+    <div class="lang-row">
+      <div class="lang-label" id="langLabel">中文/En</div>
+      <button class="toggle" id="langToggle" type="button" aria-label="切换中英文"></button>
+    </div>
 
-<div class="location-row">
-<span id="locationText"></span>
-</div>
+    <div class="location-row">
+      <div class="location-inner">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+          <path d="M12 2.8c-3.52 0-6.38 2.8-6.38 6.26 0 4.58 5.14 10.77 5.36 11.03a1.33 1.33 0 0 0 2.04 0c.22-.26 5.36-6.45 5.36-11.03 0-3.46-2.86-6.26-6.38-6.26Zm0 9.03a2.77 2.77 0 1 1 0-5.54 2.77 2.77 0 0 1 0 5.54Z"></path>
+        </svg>
+        <span id="locationText">南方科技大学</span>
+      </div>
+    </div>
 
-<div class="card">
+    <div class="campus-card">
+      <svg class="card-lines" viewBox="0 0 292 470" preserveAspectRatio="none">
+        <path d="M18 44C80 18 130 64 274 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M10 118C96 72 182 124 282 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M6 188C84 242 180 210 286 250" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M12 316C94 286 192 320 286 366" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+      </svg>
 
-<div class="info">
-<div><span id="labelName"></span><span id="nameText"></span></div>
-<div><span id="labelSid"></span><span id="sidText"></span></div>
-<div><span id="labelDept"></span><span id="deptText"></span></div>
-</div>
+      <div class="card-top">
+        <div class="banner-box">
+          <img id="bannerImage" alt="顶部标识" style="display:none;">
+          <div id="bannerFallback" class="banner-fallback">未配置顶部图片</div>
+        </div>
 
-<div class="status">
+        <button type="button" id="openQrBtn" class="small-qr-btn">
+          <div class="small-qr-wrap">
+            <div class="small-qr-grid">
+              <span></span><span></span><span></span><span class="special"></span>
+            </div>
+            <div class="small-qr-label" id="payLabel">支付码</div>
+          </div>
+        </button>
+      </div>
 
-<div>
-<div id="statusTitle"></div>
-<div id="statusValue"></div>
-</div>
+      <div class="photo-wrap">
+        <div class="photo-box">
+          <img id="photoImage" alt="证件照" style="display:none;">
+          <div id="photoFallback" class="photo-fallback">未配置照片</div>
+        </div>
+      </div>
 
-<div class="balance">
-<div id="balanceTitle"></div>
+      <div class="info-block">
+        <div class="info-row"><span class="info-label" id="labelName">姓名：</span><span id="nameText">林骁</span></div>
+        <div class="info-row"><span class="info-label" id="labelSid">SID：</span><span id="sidText">12432437</span></div>
+        <div class="info-row"><span class="info-label" id="labelDept">部门：</span><span id="deptText">机械与能源工程系</span></div>
+      </div>
 
-<button id="balanceToggleBtn">👁</button>
+      <div class="status-grid">
+        <div class="status-col">
+          <div class="status-title" id="statusTitle">卡状态</div>
+          <div class="status-values">
+            <div class="status-normal" id="statusValue">正常</div>
+          </div>
+        </div>
+        <div class="status-col">
+          <div class="status-title" id="balanceTitle">卡内余额</div>
+          <button class="balance-toggle-btn" id="balanceToggleBtn" type="button" aria-label="显示余额">
+            <div class="eye-wrap" id="eyeWrap">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </div>
+          </button>
+          <div class="balance-amount" id="balanceAmount" style="cursor:pointer;">
+            <span class="balance-main" id="balanceMain"></span><span class="balance-unit" id="balanceUnit"></span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<div id="balanceAmount" class="balance-amount">
-<span id="balanceMain"></span>
-<span id="balanceUnit"></span>
-</div>
+    <div class="decor-pad" aria-hidden="true">
+      <div class="grid">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+    </div>
+  </div>
 
-</div>
+  <div id="qrModal" class="modal-mask">
+    <div class="modal-card">
+      <svg class="modal-lines" viewBox="0 0 336 520" preserveAspectRatio="none">
+        <path d="M18 44C100 18 180 64 318 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M10 118C96 72 202 124 326 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M6 188C84 242 200 210 326 250" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M12 316C94 286 212 320 326 366" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+      </svg>
 
-</div>
+      <button id="closeQrBtn" class="close-btn" type="button" aria-label="关闭支付码">×</button>
+      <div class="qr-stage"><div class="qr-box"><canvas id="qrCanvas" width="248" height="248"></canvas></div></div>
+      <div class="modal-tip" id="qrTip">二维码每60s刷新一次</div>
+      <button id="refreshQrBtn" class="refresh-btn" type="button">刷新</button>
+    </div>
+  </div>
 
-</div>
+  <script>
+    const DEFAULTS = {
+      name: {"zh":"林骁","en":"Lin Xiao"},
+      sid: "12432437",
+      department: {"zh":"机械与能源工程系","en":"Department of Mechanical and Energy Engineering"},
+      banner: "./banner.png",
+      photo: "./photo.jpg",
+      bannerX: 0,
+      bannerY: 0,
+      bannerScale: 100,
+      balanceValue: "9.94",
+      balanceFontSize: 14,
+      currency: "CNY",
+      zhSchool: "南方科技大学",
+      enSchool: "Southern University of Science and Technology",
+      defaultLang: "zh"
+    };
 
-</div>
+    const state = {
+      ...DEFAULTS,
+      qrSeed: `${Date.now()}-${Math.random().toString(36).slice(2,10)}`,
+      lang: DEFAULTS.defaultLang,
+      balanceVisible: false
+    };
 
-<script>
-const state={
-name:{zh:"林骁",en:"林骁"},
-department:{zh:"机械与能源工程系",en:"机械与能源工程系"},
-sid:"12432437",
-balanceValue:"9.94",
-balanceFontSize:18,
-currency:"CNY",
-lang:"zh",
-balanceVisible:false
-};
+    const el = {
+      bannerImage: document.getElementById("bannerImage"),
+      bannerFallback: document.getElementById("bannerFallback"),
+      photoImage: document.getElementById("photoImage"),
+      photoFallback: document.getElementById("photoFallback"),
+      nameText: document.getElementById("nameText"),
+      sidText: document.getElementById("sidText"),
+      deptText: document.getElementById("deptText"),
+      labelName: document.getElementById("labelName"),
+      labelSid: document.getElementById("labelSid"),
+      labelDept: document.getElementById("labelDept"),
+      statusTitle: document.getElementById("statusTitle"),
+      statusValue: document.getElementById("statusValue"),
+      balanceTitle: document.getElementById("balanceTitle"),
+      balanceToggleBtn: document.getElementById("balanceToggleBtn"),
+      eyeWrap: document.getElementById("eyeWrap"),
+      balanceAmount: document.getElementById("balanceAmount"),
+      balanceMain: document.getElementById("balanceMain"),
+      balanceUnit: document.getElementById("balanceUnit"),
+      langLabel: document.getElementById("langLabel"),
+      langToggle: document.getElementById("langToggle"),
+      locationText: document.getElementById("locationText"),
+      payLabel: document.getElementById("payLabel"),
+      openQrBtn: document.getElementById("openQrBtn"),
+      qrModal: document.getElementById("qrModal"),
+      closeQrBtn: document.getElementById("closeQrBtn"),
+      refreshQrBtn: document.getElementById("refreshQrBtn"),
+      qrTip: document.getElementById("qrTip"),
+      qrCanvas: document.getElementById("qrCanvas")
+    };
 
-const el={
-nameText:document.getElementById("nameText"),
-sidText:document.getElementById("sidText"),
-deptText:document.getElementById("deptText"),
-labelName:document.getElementById("labelName"),
-labelSid:document.getElementById("labelSid"),
-labelDept:document.getElementById("labelDept"),
-statusTitle:document.getElementById("statusTitle"),
-statusValue:document.getElementById("statusValue"),
-balanceTitle:document.getElementById("balanceTitle"),
-balanceToggleBtn:document.getElementById("balanceToggleBtn"),
-balanceAmount:document.getElementById("balanceAmount"),
-balanceMain:document.getElementById("balanceMain"),
-balanceUnit:document.getElementById("balanceUnit"),
-langToggle:document.getElementById("langToggle"),
-locationText:document.getElementById("locationText")
-};
+    let qr;
+    let qrTimer = null;
 
-/* 语言 */
-function applyLang(){
-const isEn=state.lang==="en";
+    function titleCaseEn(text) {
+      return String(text || "")
+        .split(" ")
+        .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : "")
+        .join(" ");
+    }
 
-el.labelName.textContent=isEn?"NAME:":"姓名：";
-el.labelSid.textContent="SID：";
-el.labelDept.textContent=isEn?"DEPARTMENT:":"部门：";
+    async function loadConfig() {
+      try {
+        const res = await fetch("./config.json", { cache: "no-store" });
+        if (!res.ok) throw new Error("config load failed");
+        const cfg = await res.json();
+        Object.assign(state, cfg);
+        state.lang = cfg.defaultLang || state.lang;
+      } catch (e) {
+        console.warn("使用默认配置", e);
+      }
+      applyConfig();
+    }
 
-el.statusTitle.textContent=isEn?"STATUS":"卡状态";
-el.statusValue.textContent=isEn?"NORMAL":"正常";
+    function getLangValue(v) {
+      if (v && typeof v === "object") {
+        if (state.lang === "en") return v.en ?? v.zh ?? "";
+        return v.zh ?? v.en ?? "";
+      }
+      return v ?? "";
+    }
 
-el.balanceTitle.textContent=isEn?"BALANCE":"卡内余额";
+    function getCurrencyUnit() {
+      const map = {
+        CNY: { zh: "元", en: "CNY", highlightZh: false, highlightEn: true },
+        RMB: { zh: "元", en: "CNY", highlightZh: false, highlightEn: true },
+        USD: { zh: "美元", en: "USD", highlightZh: false, highlightEn: true },
+        HKD: { zh: "港币", en: "HKD", highlightZh: false, highlightEn: true },
+        EUR: { zh: "欧元", en: "EUR", highlightZh: false, highlightEn: true }
+      };
+      const key = String(state.currency || "CNY").toUpperCase();
+      return map[key] || map.CNY;
+    }
 
-el.locationText.textContent=isEn?
-"📍 Southern University of Science and Technology":
-"📍 南方科技大学";
+    function applyConfig() {
+      const rawName = (state.name && typeof state.name === "object") ? (state.name.zh ?? state.name.en ?? "") : (state.name || "");
+      const rawDept = (state.department && typeof state.department === "object") ? (state.department.zh ?? state.department.en ?? "") : (state.department || "");
 
-el.nameText.textContent=state.name.zh;
-el.deptText.textContent=state.department.zh;
-el.sidText.textContent=state.sid;
+      el.nameText.textContent = rawName;
+      el.sidText.textContent = state.sid || "";
+      el.deptText.textContent = rawDept;
 
-el.langToggle.classList.toggle("on",isEn);
-}
+      if (state.photo) {
+        el.photoImage.src = state.photo;
+        el.photoImage.style.display = "block";
+        el.photoFallback.style.display = "none";
+      } else {
+        el.photoImage.style.display = "none";
+        el.photoFallback.style.display = "flex";
+      }
 
-/* 余额 */
-function applyBalance(){
-el.balanceMain.textContent=state.balanceValue;
-el.balanceUnit.textContent=state.lang==="en"?"CNY":"元";
+      if (state.banner) {
+        el.bannerImage.src = state.banner;
+        el.bannerImage.style.display = "block";
+        el.bannerFallback.style.display = "none";
+        el.bannerImage.style.transform =
+          `translate(${Number(state.bannerX)||0}px, ${Number(state.bannerY)||0}px) scale(${(Number(state.bannerScale)||100)/100})`;
+      } else {
+        el.bannerImage.style.display = "none";
+        el.bannerFallback.style.display = "flex";
+      }
 
-el.balanceMain.style.fontSize=state.balanceFontSize+"px";
-el.balanceUnit.style.fontSize=state.balanceFontSize+"px";
+      applyLanguage();
+      applyBalance();
+    }
 
-if(state.balanceVisible){
-el.balanceAmount.classList.add("show");
-el.balanceToggleBtn.style.display="none";
-}else{
-el.balanceAmount.classList.remove("show");
-el.balanceToggleBtn.style.display="inline";
-}
-}
+    function applyLanguage() {
+      const isEn = state.lang === "en";
+      el.langToggle.classList.toggle("on", isEn);
+      el.locationText.textContent = isEn ? (state.enSchool || DEFAULTS.enSchool) : (state.zhSchool || DEFAULTS.zhSchool);
+      el.locationText.style.transform = "translateX(0)";
+      el.payLabel.textContent = isEn ? "Qrcode" : "支付码";
+      el.labelName.textContent = isEn ? "NAME:" : "姓名：";
+      el.labelSid.textContent = "SID：";
+      el.labelDept.textContent = isEn ? "DEPARTMENT:" : "部门：";
+      el.statusTitle.textContent = isEn ? "STATUS" : "卡状态";
+      el.statusValue.textContent = isEn ? "NORMAL" : "正常";
+      el.balanceTitle.textContent = isEn ? "BALANCE" : "卡内余额";
+      el.qrTip.textContent = isEn ? "Refresh every 60 seconds" : "二维码每60s刷新一次";
+      el.refreshQrBtn.textContent = isEn ? "Refresh" : "刷新";
+      el.langLabel.textContent = "中文/En";
+    }
 
-/* 点击逻辑 */
-el.balanceToggleBtn.onclick=()=>{
-state.balanceVisible=true;
-applyBalance();
-};
+    function applyBalance() {
+      const size = Number(state.balanceFontSize) || 14;
+      const unit = getCurrencyUnit();
 
-el.balanceAmount.onclick=()=>{
-state.balanceVisible=false;
-applyBalance();
-};
+      el.balanceMain.style.fontSize = size + "px";
+      el.balanceUnit.style.fontSize = size + "px";
+      el.balanceMain.textContent = state.balanceValue || "0.00";
+      el.balanceUnit.textContent = state.lang === "en" ? unit.en : unit.zh;
+      el.balanceMain.style.color = "#000";
+      el.balanceUnit.style.color = state.lang === "en" ? "var(--green-dark)" : "var(--green-dark)";
+      el.balanceUnit.classList.toggle("highlight", state.lang === "en" ? unit.highlightEn : unit.highlightZh);
 
-/* 切换语言 */
-el.langToggle.onclick=()=>{
-state.lang=state.lang==="zh"?"en":"zh";
-applyLang();
-applyBalance();
-};
+      if (state.balanceVisible) {
+        el.eyeWrap.style.display = "none";
+        el.balanceAmount.classList.add("show");
+      } else {
+        el.eyeWrap.style.display = "flex";
+        el.balanceAmount.classList.remove("show");
+      }
+    }
 
-/* 初始化 */
-applyLang();
-applyBalance();
+    function buildDynamicToken() {
+      const now = Date.now();
+      const bucket = Math.floor(now / 60000);
+      const seed = `${state.sid}|${bucket}|${state.qrSeed}|${navigator.userAgent.length}`;
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+      const token = Math.abs(hash).toString(36).toUpperCase().padStart(8, "0").slice(0, 8);
+      return JSON.stringify({
+        sid: state.sid,
+        ts: now,
+        exp: (bucket + 1) * 60000,
+        token
+      });
+    }
 
-/* 禁止缩放 */
-document.addEventListener("gesturestart",e=>e.preventDefault());
-</script>
+    function drawQr() {
+      const value = buildDynamicToken();
+      if (!qr) {
+        qr = new QRious({
+          element: el.qrCanvas,
+          value,
+          size: 248,
+          level: "M",
+          background: "#ffffff",
+          foreground: "#000000"
+        });
+      } else {
+        qr.value = value;
+        qr.size = 248;
+      }
+    }
 
+    function refreshQr() {
+      state.qrSeed = `${Date.now()}-${Math.random().toString(36).slice(2,12)}`;
+      drawQr();
+    }
+
+    function startQrAutoRefresh() {
+      stopQrAutoRefresh();
+      qrTimer = setInterval(() => {
+        if (el.qrModal.classList.contains("show")) refreshQr();
+      }, 60000);
+    }
+
+    function stopQrAutoRefresh() {
+      if (qrTimer) clearInterval(qrTimer);
+      qrTimer = null;
+    }
+
+    el.openQrBtn.addEventListener("click", () => {
+      el.qrModal.classList.add("show");
+      drawQr();
+      startQrAutoRefresh();
+    });
+
+    el.closeQrBtn.addEventListener("click", () => {
+      el.qrModal.classList.remove("show");
+      stopQrAutoRefresh();
+    });
+
+    el.qrModal.addEventListener("click", (e) => {
+      if (e.target === el.qrModal) {
+        el.qrModal.classList.remove("show");
+        stopQrAutoRefresh();
+      }
+    });
+
+    el.refreshQrBtn.addEventListener("click", refreshQr);
+
+    el.balanceToggleBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      state.balanceVisible = !state.balanceVisible;
+      applyBalance();
+    });
+
+    el.balanceAmount.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      state.balanceVisible = false;
+      applyBalance();
+    });
+
+    el.langToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      state.lang = state.lang === "zh" ? "en" : "zh";
+      applyLanguage();
+      applyBalance();
+    });
+
+    loadConfig();
+
+    document.addEventListener("gesturestart", e => e.preventDefault());
+    document.addEventListener("dblclick", e => e.preventDefault(), { passive: false });
+  </script>
 </body>
 </html>
