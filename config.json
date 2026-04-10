@@ -1,18 +1,27 @@
 {
   "name": {
-  "zh": "林骁",
-  "en": "Lin Xiao"
+    "zh": "林骁",
+    "en": "林骁"
   },
-  "department": {
-  "zh": "机械与能源工程系",
-  "en": "Department of Mechanical and Energy Engineering"
-  }
   "sid": "12432437",
+  "department": {
+    "zh": "机械与能源工程系",
+    "en": "机械与能源工程系"
+  },
   "banner": "./banner.png",
   "photo": "./photo.jpg",
+
   "bannerX": 0,
   "bannerY": 0,
-  "bannerScale": 100
+  "bannerScale": 100,
+
   "balanceValue": "9.94",
-  "balanceFontSize": 22
+  "balanceFontSize": 18,
+
+  "currency": "CNY",
+
+  "zhSchool": "南方科技大学",
+  "enSchool": "Southern University of Science and Technology",
+
+  "defaultLang": "zh"
 }
