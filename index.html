@@ -11,7 +11,6 @@
       --bg-mid:#bbddd8;
       --bg-bottom:#e7d7cb;
       --card-bg:rgba(255,255,255,.965);
-      --line:#e6c9c2;
       --green:#9ac43b;
       --green-dark:#96c13d;
       --gray:#7f7f7f;
@@ -66,20 +65,16 @@
     .campus-card{
       position:relative;z-index:1;
       width:292px;margin:56px auto 0;
-      border-radius:30px;background:var(--card-bg);
+      border-radius:30px;background:rgba(255,255,255,.965);
       padding:18px 18px 28px;
       box-shadow:0 8px 24px rgba(0,0,0,.04);
       overflow:hidden;
     }
     .card-lines,.modal-lines{position:absolute;inset:0;pointer-events:none;opacity:.14}
-    .card-top{
-      position:relative;
-      display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
-    }
+    .card-top{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
     .banner-box{position:relative;width:214px;height:54px;overflow:hidden;border-radius:4px}
     .banner-box img{
-      position:absolute;left:0;top:0;
-      width:206px;height:48px;object-fit:contain;transform-origin:top left;
+      position:absolute;left:0;top:0;width:206px;height:48px;object-fit:contain;transform-origin:top left;
     }
     .banner-fallback,.photo-fallback{
       width:100%;height:100%;display:flex;align-items:center;justify-content:center;
@@ -114,7 +109,7 @@
       margin-bottom:12px;display:flex;align-items:center;font-size:16px;line-height:1;white-space:nowrap;
     }
     .info-row:last-child{margin-bottom:0}
-    .info-label{display:inline-block;width:74px}
+    .info-label{display:inline-block;width:92px}
     .status-grid{
       margin-top:58px;display:grid;grid-template-columns:1fr 1fr;text-align:center;
       font-family:"KaiTi","STKaiti",serif;
@@ -123,25 +118,23 @@
     .status-title{font-size:16px;color:#000}
     .status-values{
       margin-top:18px;font-size:16px;line-height:1.15;display:flex;flex-direction:column;gap:6px;
-      min-height:40px;align-items:center;justify-content:flex-start;
+      min-height:44px;align-items:center;justify-content:flex-start;
     }
     .status-normal{color:var(--green-dark)}
     .balance-toggle-btn{
-      margin-top:14px;
-      border:none;background:transparent;padding:0;cursor:pointer;color:var(--green-dark);
-      font:inherit;
+      margin-top:14px;border:none;background:transparent;padding:0;cursor:pointer;color:var(--green-dark);font:inherit;
     }
+    .eye-wrap{display:flex;justify-content:center;color:var(--green-dark)}
     .balance-amount{
       margin-top:10px;line-height:1.05;color:#000;
       display:none;align-items:baseline;justify-content:center;gap:2px;flex-wrap:nowrap;
       font-family:"PingFang SC","Microsoft YaHei",sans-serif;
     }
     .balance-amount.show{display:flex}
-    .balance-main{font-weight:500}
-    .balance-unit{color:var(--green-dark)}
-    .eye-wrap{
-      display:flex;justify-content:center;color:var(--green-dark);
+    .balance-main,.balance-unit{
+      font-weight:500;font-size:inherit;color:inherit;
     }
+    .balance-unit.highlight{color:var(--green-dark)}
     .decor-pad{
       position:absolute;right:18px;bottom:26px;width:54px;height:54px;border-radius:50%;
       background:var(--green);box-shadow:0 6px 14px rgba(0,0,0,.16);
@@ -167,17 +160,13 @@
     }
     .qr-stage{margin-top:54px;display:flex;justify-content:center}
     .qr-box{
-      width:248px;height:248px;background:#fff;display:flex;align-items:center;justify-content:center;
-      overflow:hidden;
+      width:248px;height:248px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;
     }
-    #qrCanvas{
-      width:248px;height:248px;display:block;background:#fff;image-rendering:pixelated;
-    }
+    #qrCanvas{width:248px;height:248px;display:block;background:#fff;image-rendering:pixelated}
     .modal-tip{margin-top:18px;text-align:center;font-size:16px;color:#d0d0d0}
     .refresh-btn{
       display:block;width:170px;height:54px;margin:22px auto 0;border:none;border-radius:14px;
-      background:var(--green);color:#fff;font-size:19px;font-weight:600;cursor:pointer;
-      box-shadow:0 2px 6px rgba(0,0,0,.12);
+      background:var(--green);color:#fff;font-size:19px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);
     }
   </style>
 </head>
@@ -298,9 +287,9 @@
 
   <script>
     const DEFAULTS = {
-      name: "林骁",
+      name: {"zh":"林骁","en":"Lin Xiao"},
       sid: "12432437",
-      department: "机械与能源工程系",
+      department: {"zh":"机械与能源工程系","en":"Department of Mechanical and Energy Engineering"},
       banner: "./banner.png",
       photo: "./photo.jpg",
       bannerX: 0,
@@ -308,6 +297,7 @@
       bannerScale: 100,
       balanceValue: "9.94",
       balanceFontSize: 22,
+      currency: "CNY",
       zhSchool: "南方科技大学",
       enSchool: "Southern University of Science and Technology",
       defaultLang: "zh"
@@ -352,6 +342,14 @@
     };
 
     let qr;
+    let qrTimer = null;
+
+    function titleCaseEn(text) {
+      return String(text || "")
+        .split(" ")
+        .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : "")
+        .join(" ");
+    }
 
     async function loadConfig() {
       try {
@@ -366,10 +364,33 @@
       applyConfig();
     }
 
+    function getLangValue(v) {
+      if (v && typeof v === "object") {
+        if (state.lang === "en") return v.en ?? v.zh ?? "";
+        return v.zh ?? v.en ?? "";
+      }
+      return v ?? "";
+    }
+
+    function getCurrencyUnit() {
+      const map = {
+        CNY: { zh: "元", en: "CNY", highlightZh: false, highlightEn: true },
+        RMB: { zh: "元", en: "CNY", highlightZh: false, highlightEn: true },
+        USD: { zh: "美元", en: "USD", highlightZh: false, highlightEn: true },
+        HKD: { zh: "港币", en: "HKD", highlightZh: false, highlightEn: true },
+        EUR: { zh: "欧元", en: "EUR", highlightZh: false, highlightEn: true }
+      };
+      const key = String(state.currency || "CNY").toUpperCase();
+      return map[key] || map.CNY;
+    }
+
     function applyConfig() {
-      el.nameText.textContent = state.name || "";
+      const rawName = getLangValue(state.name);
+      const rawDept = getLangValue(state.department);
+
+      el.nameText.textContent = state.lang === "en" ? titleCaseEn(rawName) : rawName;
       el.sidText.textContent = state.sid || "";
-      el.deptText.textContent = state.department || "";
+      el.deptText.textContent = state.lang === "en" ? titleCaseEn(rawDept) : rawDept;
 
       if (state.photo) {
         el.photoImage.src = state.photo;
@@ -413,10 +434,13 @@
 
     function applyBalance() {
       const size = Number(state.balanceFontSize) || 22;
+      const unit = getCurrencyUnit();
+
       el.balanceMain.style.fontSize = size + "px";
-      el.balanceUnit.style.fontSize = Math.max(16, size - 4) + "px";
+      el.balanceUnit.style.fontSize = size + "px";
       el.balanceMain.textContent = state.balanceValue || "0.00";
-      el.balanceUnit.textContent = state.lang === "en" ? "CNY" : "元";
+      el.balanceUnit.textContent = state.lang === "en" ? unit.en : unit.zh;
+      el.balanceUnit.classList.toggle("highlight", state.lang === "en" ? unit.highlightEn : unit.highlightZh);
 
       if (state.balanceVisible) {
         el.eyeWrap.style.display = "none";
@@ -427,22 +451,34 @@
       }
     }
 
-    function getQrValue() {
-      return `campus-pay-${state.sid || "00000000"}-${state.qrSeed}`;
+    function buildDynamicToken() {
+      const now = Date.now();
+      const bucket = Math.floor(now / 60000);
+      const seed = `${state.sid}|${bucket}|${state.qrSeed}|${navigator.userAgent.length}`;
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+      const token = Math.abs(hash).toString(36).toUpperCase().padStart(8, "0").slice(0, 8);
+      return JSON.stringify({
+        sid: state.sid,
+        ts: now,
+        exp: (bucket + 1) * 60000,
+        token
+      });
     }
 
     function drawQr() {
+      const value = buildDynamicToken();
       if (!qr) {
         qr = new QRious({
           element: el.qrCanvas,
-          value: getQrValue(),
+          value,
           size: 248,
           level: "M",
           background: "#ffffff",
           foreground: "#000000"
         });
       } else {
-        qr.value = getQrValue();
+        qr.value = value;
         qr.size = 248;
       }
     }
@@ -452,17 +488,34 @@
       drawQr();
     }
 
+    function startQrAutoRefresh() {
+      stopQrAutoRefresh();
+      qrTimer = setInterval(() => {
+        if (el.qrModal.classList.contains("show")) refreshQr();
+      }, 60000);
+    }
+
+    function stopQrAutoRefresh() {
+      if (qrTimer) clearInterval(qrTimer);
+      qrTimer = null;
+    }
+
     el.openQrBtn.addEventListener("click", () => {
       el.qrModal.classList.add("show");
       drawQr();
+      startQrAutoRefresh();
     });
 
     el.closeQrBtn.addEventListener("click", () => {
       el.qrModal.classList.remove("show");
+      stopQrAutoRefresh();
     });
 
     el.qrModal.addEventListener("click", (e) => {
-      if (e.target === el.qrModal) el.qrModal.classList.remove("show");
+      if (e.target === el.qrModal) {
+        el.qrModal.classList.remove("show");
+        stopQrAutoRefresh();
+      }
     });
 
     el.refreshQrBtn.addEventListener("click", refreshQr);
@@ -474,11 +527,13 @@
 
     el.langToggle.addEventListener("click", () => {
       state.lang = state.lang === "zh" ? "en" : "zh";
-      applyLanguage();
-      applyBalance();
+      applyConfig();
     });
 
     loadConfig();
+
+    document.addEventListener("gesturestart", e => e.preventDefault());
+    document.addEventListener("dblclick", e => e.preventDefault(), { passive: false });
   </script>
 </body>
 </html>
