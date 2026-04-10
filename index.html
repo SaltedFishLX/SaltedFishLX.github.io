@@ -1,85 +1,367 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>电子校园卡</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: #000;
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .image-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        img {
-            object-fit: cover;
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        
-        /* 添加简单的加载提示 */
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(255,255,255,0.7);
-            font-family: system-ui, sans-serif;
-        }
-        
-        .rotate-hint {
-            display: none;
-        }
-        
-        @media (min-width: 768px) {
-            .image-container {
-                max-width: 70vh;
-                max-height: 90vh;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="image-container">
-        <!-- 将your-image.jpg替换为你的实际图片文件名 -->
-        <img src="SID.png" alt="电子校园卡" id="fullscreen-image">
-    </div>
+import React, { useMemo, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const img = document.getElementById('fullscreen-image');
-            const loading = document.querySelector('.loading');
-            
-            img.onload = function() {
-                loading.style.display = 'none';
-            };
-            
-            // 禁用双指缩放（防止意外操作）
-            document.addEventListener('touchmove', function(event) {
-                if(event.touches.length > 1) {
-                    event.preventDefault();
-                }
-            }, { passive: false });
-        });
-    </script>
-</body>
-</html>
+function BottomPadButton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="absolute bottom-[22px] right-[18px] flex h-[54px] w-[54px] items-center justify-center rounded-full bg-[#9ac43b] shadow-md"
+    >
+      <div className="grid grid-cols-3 gap-[5px]">
+        {Array.from({ length: 9 }).map((_, index) => (
+          <span key={index} className="h-[4px] w-[4px] rounded-full bg-white" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LocationMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[14px] w-[14px] text-white/85" fill="currentColor" aria-hidden="true">
+      <path d="M12 2.8c-3.52 0-6.38 2.8-6.38 6.26 0 4.58 5.14 10.77 5.36 11.03a1.33 1.33 0 0 0 2.04 0c.22-.26 5.36-6.45 5.36-11.03 0-3.46-2.86-6.26-6.38-6.26Zm0 9.03a2.77 2.77 0 1 1 0-5.54 2.77 2.77 0 0 1 0 5.54Z" />
+    </svg>
+  );
+}
+
+function SmallQrIcon() {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="grid grid-cols-2 gap-[3px] p-[2px]">
+        <span className="h-[11px] w-[11px] border-[3px] border-black" />
+        <span className="h-[11px] w-[11px] border-[3px] border-black" />
+        <span className="h-[11px] w-[11px] border-[3px] border-black" />
+        <span className="relative h-[11px] w-[11px] border-[3px] border-black">
+          <span className="absolute left-[1px] top-[1px] h-[2px] w-[2px] bg-black" />
+          <span className="absolute right-[1px] bottom-[1px] h-[2px] w-[2px] bg-black" />
+        </span>
+      </div>
+      <div className="mt-[2px] text-[12px] leading-none text-[#c96d47]" style={{ fontFamily: 'KaiTi, STKaiti, serif' }}>
+        支付码
+      </div>
+    </div>
+  );
+}
+
+function ModalQrCode({ onClose, qrValue, onRefresh }) {
+  return (
+    <div className="relative mx-auto w-full rounded-[30px] bg-white px-[18px] pb-[28px] pt-[18px] shadow-xl overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.12]">
+        <svg viewBox="0 0 360 520" className="h-full w-full">
+          <path d="M18 44C100 18 180 64 338 22" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+          <path d="M10 118C96 72 202 124 350 96" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+          <path d="M6 188C84 242 200 210 350 250" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+          <path d="M12 316C94 286 212 320 350 366" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+          <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+          <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+          <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+        </svg>
+      </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="关闭支付码"
+        className="absolute right-[18px] top-[18px] flex h-[48px] w-[48px] items-center justify-center rounded-full border-[3px] border-[#7f7f7f] text-[24px] leading-none text-[#7f7f7f] z-10"
+      >
+        ×
+      </button>
+
+      <div className="mt-[52px] flex justify-center">
+        <div className="flex h-[286px] w-[286px] items-center justify-center bg-white">
+          <QRCodeSVG
+            value={qrValue}
+            size={286}
+            level="M"
+            includeMargin={false}
+            bgColor="#ffffff"
+            fgColor="#000000"
+          />
+        </div>
+      </div>
+
+      <div className="mt-[26px] text-center text-[16px] text-[#d0d0d0]" style={{ fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif' }}>
+        二维码每60s刷新一次
+      </div>
+
+      <button
+        type="button"
+        onClick={onRefresh}
+        className="mx-auto mt-[26px] block h-[54px] w-[176px] rounded-[14px] bg-[#9ac43b] text-[20px] font-medium text-white shadow-sm"
+        style={{ fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif' }}
+      >
+        刷新
+      </button>
+    </div>
+  );
+}
+
+export default function CampusCardEditor() {
+  const [name, setName] = useState('林骁');
+  const [sid, setSid] = useState('12432437');
+  const [department, setDepartment] = useState('机械与能源工程系');
+  const [status, setStatus] = useState('正常 可以入校');
+  const [photo, setPhoto] = useState('');
+  const [qrSeed, setQrSeed] = useState(() => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
+  const [showQr, setShowQr] = useState(false);
+  const [bannerImg, setBannerImg] = useState('');
+  const [bannerX, setBannerX] = useState(0);
+  const [bannerY, setBannerY] = useState(0);
+  const [bannerScale, setBannerScale] = useState(100);
+
+  const topBannerSrc = bannerImg || '';
+  const qrValue = useMemo(() => `campus-pay-${sid || '00000000'}-${qrSeed}`, [sid, qrSeed]);
+
+  const refreshQrCode = () => {
+    setQrSeed(`${Date.now()}-${Math.random().toString(36).slice(2, 12)}`);
+  };
+
+  const handlePhotoChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') setPhoto(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#ededed] p-0 sm:flex sm:justify-center sm:p-3">
+      <div className="w-full max-w-[414px] bg-[#f4f4f4] shadow-2xl sm:overflow-hidden sm:rounded-[34px]">
+        <div className="flex items-center justify-between px-[18px] pb-[8px] pt-[16px]">
+          <div className="text-[28px] leading-none text-black">‹</div>
+          <div className="text-[18px] font-semibold text-black">电子校园卡</div>
+          <div className="text-[24px] leading-none tracking-[-2px] text-black">···</div>
+        </div>
+
+        <div className="relative min-h-[760px] overflow-hidden bg-[linear-gradient(180deg,#a8d3cb_0%,#bbddd8_46%,#e1ddd8_100%)] px-0 pt-0">
+          <div className="pointer-events-none absolute inset-0 opacity-40">
+            <svg viewBox="0 0 414 760" className="h-full w-full">
+              <path d="M52 32C40 130 130 190 290 280" stroke="white" strokeDasharray="2 6" strokeWidth="1.4" fill="none" />
+              <path d="M362 44C294 120 280 230 206 320" stroke="white" strokeDasharray="2 6" strokeWidth="1.4" fill="none" />
+              <path d="M376 256C338 392 366 522 332 718" stroke="white" strokeDasharray="2 6" strokeWidth="1.4" fill="none" />
+              <path d="M74 650C140 548 182 470 278 392" stroke="white" strokeDasharray="2 6" strokeWidth="1.4" fill="none" />
+            </svg>
+          </div>
+
+          <div className="flex items-center justify-end gap-[10px] px-[24px] pt-[22px] text-white/90">
+            <div className="text-[12px] leading-none">中文/En</div>
+            <div className="relative h-[34px] w-[78px] rounded-full bg-[#efefef] shadow-inner">
+              <div className="absolute left-[2px] top-[2px] h-[30px] w-[30px] rounded-full bg-white shadow-md" />
+            </div>
+          </div>
+
+          <div className="mt-[12px] flex justify-end px-[24px] text-white/90">
+            <div className="flex items-center gap-[6px] text-[16px]" style={{ fontFamily: 'KaiTi, STKaiti, serif' }}>
+              <LocationMark />
+              <span>南方科技大学</span>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-[56px] w-[292px] rounded-[30px] bg-white/96 px-[18px] pb-[28px] pt-[18px] shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
+            <div className="pointer-events-none absolute opacity-[0.12]" />
+            <div className="absolute left-0 top-0 hidden" />
+
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-0 opacity-[0.14]">
+                <svg viewBox="0 0 292 470" className="h-full w-full">
+                  <path d="M18 44C80 18 130 64 274 22" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+                  <path d="M10 118C96 72 182 124 282 96" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+                  <path d="M6 188C84 242 180 210 286 250" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+                  <path d="M12 316C94 286 192 320 286 366" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+                  <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+                  <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+                  <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+                </svg>
+              </div>
+
+              <div className="relative flex items-start justify-between gap-[8px]">
+                <div className="relative h-[54px] w-[214px] overflow-hidden rounded-[4px] bg-transparent">
+                  {topBannerSrc ? (
+                    <img
+                      src={topBannerSrc}
+                      alt="顶部标识"
+                      className="absolute left-0 top-0 max-w-none object-contain"
+                      style={{
+                        transform: `translate(${bannerX}px, ${bannerY}px) scale(${bannerScale / 100})`,
+                        transformOrigin: 'top left',
+                        width: '206px',
+                        height: '48px'
+                      }}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center rounded-[4px] border border-dashed border-slate-300 text-[12px] text-slate-400">
+                      上传顶部图片
+                    </div>
+                  )}
+                </div>
+                <button type="button" onClick={() => setShowQr(true)} className="pt-[2px] shrink-0">
+                  <SmallQrIcon />
+                </button>
+              </div>
+
+              <div className="mt-[24px] flex justify-center">
+                <div className="h-[146px] w-[118px] overflow-hidden bg-[#f1f1f1]">
+                  {photo ? (
+                    <img src={photo} alt="证件照" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[12px] text-slate-400">上传照片</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-[28px] pl-[34px] text-black" style={{ fontFamily: 'KaiTi, STKaiti, serif' }}>
+                <div className="mb-[12px] flex items-center text-[16px] leading-none whitespace-nowrap">
+                  <span className="inline-block w-[52px]">姓名：</span>
+                  <span>{name}</span>
+                </div>
+                <div className="mb-[12px] flex items-center text-[16px] leading-none whitespace-nowrap">
+                  <span className="inline-block w-[52px]">SID：</span>
+                  <span>{sid}</span>
+                </div>
+                <div className="flex items-center text-[16px] leading-none whitespace-nowrap">
+                  <span className="inline-block w-[52px]">部门：</span>
+                  <span>{department}</span>
+                </div>
+              </div>
+
+              <div className="mt-[58px] grid grid-cols-2 text-center" style={{ fontFamily: 'KaiTi, STKaiti, serif' }}>
+                <div className="border-r border-[#d1d1d1]">
+                  <div className="text-[16px] text-black">卡状态</div>
+                  <div className="mt-[18px] space-y-[6px] text-[16px] leading-none text-[#96c13d]">
+                    <div>正常</div>
+                    <div>可以入校</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[16px] text-black">卡内余额</div>
+                  <div className="mt-[18px] flex justify-center text-[#96c13d]">
+                    <svg viewBox="0 0 24 24" className="h-[34px] w-[34px]" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <BottomPadButton />
+        </div>
+
+        <div className="bg-[#f4f4f4] pb-[12px] pt-[8px]">
+          <div className="flex items-center justify-center gap-[72px] text-slate-500">
+            <div className="text-[42px] font-light leading-none">‹</div>
+            <div className="text-[42px] font-light leading-none">›</div>
+          </div>
+        </div>
+
+        {showQr && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/28 px-4 pt-[92px]" onClick={() => setShowQr(false)}>
+            <div className="w-[360px] max-w-[92vw]" onClick={(e) => e.stopPropagation()}>
+              <ModalQrCode onClose={() => setShowQr(false)} qrValue={qrValue} onRefresh={refreshQrCode} />
+            </div>
+          </div>
+        )}
+
+        <div className="mx-auto max-w-[414px] bg-white px-4 py-4">
+          <div className="space-y-3 rounded-[24px] border border-slate-200 p-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">上传左上角图片</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    if (typeof reader.result === 'string') setBannerImg(reader.result);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+                className="block w-full rounded-xl border border-slate-200 p-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">左上角图片左右位置</label>
+              <input
+                type="range"
+                min="-120"
+                max="120"
+                value={bannerX}
+                onChange={(e) => setBannerX(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">左上角图片上下位置</label>
+              <input
+                type="range"
+                min="-60"
+                max="60"
+                value={bannerY}
+                onChange={(e) => setBannerY(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">左上角图片缩放</label>
+              <input
+                type="range"
+                min="50"
+                max="180"
+                value={bannerScale}
+                onChange={(e) => setBannerScale(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">上传照片</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="block w-full rounded-xl border border-slate-200 p-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">姓名</label>
+              <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-300"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">SID</label>
+              <input
+                value={sid}
+                onChange={(event) => setSid(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-300"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">部门</label>
+              <input
+                value={department}
+                onChange={(event) => setDepartment(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-300"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">卡状态</label>
+              <input
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-300"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
