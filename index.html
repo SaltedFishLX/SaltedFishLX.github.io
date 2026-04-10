@@ -1,367 +1,518 @@
-import React, { useMemo, useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+from textwrap import dedent
 
-function BottomPadButton() {
-  return (
-    <div
-      aria-hidden="true"
-      className="absolute bottom-[22px] right-[18px] flex h-[54px] w-[54px] items-center justify-center rounded-full bg-[#9ac43b] shadow-md"
-    >
-      <div className="grid grid-cols-3 gap-[5px]">
-        {Array.from({ length: 9 }).map((_, index) => (
-          <span key={index} className="h-[4px] w-[4px] rounded-full bg-white" />
-        ))}
+html = dedent(r"""
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>电子校园卡</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root{
+      --bg-top:#a8d3cb;
+      --bg-mid:#bbddd8;
+      --bg-bottom:#e1ddd8;
+      --card-bg:rgba(255,255,255,0.96);
+      --line:#e2b8b0;
+      --green:#9ac43b;
+      --green-dark:#96c13d;
+      --gray:#7f7f7f;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:#ededed;
+      font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+      display:flex;
+      justify-content:center;
+      padding:12px;
+    }
+    .phone{
+      width:100%;
+      max-width:414px;
+      background:#f4f4f4;
+      box-shadow:0 24px 48px rgba(0,0,0,.16);
+      border-radius:34px;
+      overflow:hidden;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:16px 18px 8px;
+      background:#f4f4f4;
+    }
+    .topbar .left{font-size:28px; line-height:1}
+    .topbar .title{font-size:18px; font-weight:600}
+    .topbar .more{font-size:24px; line-height:1; letter-spacing:-2px}
+    .scene{
+      position:relative;
+      min-height:760px;
+      background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-mid) 46%,var(--bg-bottom) 100%);
+      overflow:hidden;
+    }
+    .bg-dots, .bg-dots2{
+      position:absolute; inset:0; pointer-events:none; opacity:.4;
+    }
+    .lang-row{
+      display:flex; align-items:center; justify-content:flex-end;
+      gap:10px; padding:22px 24px 0; color:rgba(255,255,255,.9);
+      position:relative; z-index:1;
+    }
+    .lang-label{font-size:12px; line-height:1}
+    .toggle{
+      width:78px;height:34px;border-radius:999px;background:#efefef; position:relative;
+      box-shadow:inset 0 1px 2px rgba(0,0,0,.08);
+    }
+    .toggle::after{
+      content:""; position:absolute; left:2px; top:2px; width:30px; height:30px; border-radius:50%;
+      background:white; box-shadow:0 2px 5px rgba(0,0,0,.18);
+    }
+    .location-row{
+      margin-top:12px; display:flex; justify-content:flex-end; padding:0 24px;
+      color:rgba(255,255,255,.9); position:relative; z-index:1;
+      font-family:"KaiTi","STKaiti",serif; font-size:16px;
+    }
+    .location-inner{display:flex; align-items:center; gap:6px}
+    .campus-card{
+      width:292px; margin:56px auto 0; border-radius:30px; background:var(--card-bg);
+      padding:18px 18px 28px; position:relative; box-shadow:0 8px 24px rgba(0,0,0,.04);
+      z-index:1;
+    }
+    .card-lines{
+      position:absolute; inset:0; opacity:.14; pointer-events:none;
+    }
+    .card-top{
+      position:relative; display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+    }
+    .banner-box{
+      position:relative; width:214px; height:54px; overflow:hidden; border-radius:4px;
+    }
+    .banner-box img{
+      position:absolute; left:0; top:0; width:206px; height:48px; object-fit:contain;
+      transform-origin:top left;
+    }
+    .banner-placeholder{
+      width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+      border:1px dashed #cbd5e1; color:#94a3b8; font-size:12px; border-radius:4px;
+    }
+    .small-qr-btn{
+      background:transparent; border:none; cursor:pointer; padding-top:2px; flex-shrink:0;
+    }
+    .small-qr-grid{
+      display:grid; grid-template-columns:repeat(2,1fr); gap:3px; padding:2px;
+    }
+    .small-qr-grid span{
+      display:block; width:11px; height:11px; border:3px solid #000;
+    }
+    .small-qr-grid .special{position:relative}
+    .small-qr-grid .special::before,
+    .small-qr-grid .special::after{
+      content:""; position:absolute; width:2px; height:2px; background:#000;
+    }
+    .small-qr-grid .special::before{left:1px; top:1px}
+    .small-qr-grid .special::after{right:1px; bottom:1px}
+    .small-qr-label{
+      margin-top:2px; font-size:12px; line-height:1; color:#c96d47;
+      font-family:"KaiTi","STKaiti",serif;
+    }
+    .photo-wrap{margin-top:24px; display:flex; justify-content:center}
+    .photo-box{
+      width:118px; height:146px; overflow:hidden; background:#f1f1f1;
+      display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:12px;
+    }
+    .photo-box img{width:100%; height:100%; object-fit:cover}
+    .info-block{
+      margin-top:28px; padding-left:34px; color:#000; font-family:"KaiTi","STKaiti",serif;
+    }
+    .info-row{
+      margin-bottom:12px; display:flex; align-items:center; font-size:16px; line-height:1; white-space:nowrap;
+    }
+    .info-row:last-child{margin-bottom:0}
+    .info-label{display:inline-block; width:52px}
+    .status-grid{
+      margin-top:58px; display:grid; grid-template-columns:1fr 1fr; text-align:center;
+      font-family:"KaiTi","STKaiti",serif;
+    }
+    .status-col:first-child{border-right:1px solid #d1d1d1}
+    .status-title{font-size:16px; color:#000}
+    .status-values{
+      margin-top:18px; color:var(--green-dark); font-size:16px; line-height:1;
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .eye-wrap{margin-top:18px; display:flex; justify-content:center; color:var(--green-dark)}
+    .decor-pad{
+      position:absolute; right:18px; bottom:22px; width:54px; height:54px; border-radius:50%;
+      background:var(--green); box-shadow:0 4px 10px rgba(0,0,0,.16);
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none;
+    }
+    .decor-pad .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:5px}
+    .decor-pad .dot{width:4px; height:4px; background:#fff; border-radius:50%}
+    .bottom-nav{
+      background:#f4f4f4; padding:8px 0 12px;
+      display:flex; align-items:center; justify-content:center; gap:72px; color:#64748b;
+    }
+    .bottom-nav span{font-size:42px; line-height:1; font-weight:300}
+    .editor{
+      max-width:414px; margin:0 auto; background:#fff; padding:16px;
+    }
+    .panel{
+      border:1px solid #e2e8f0; border-radius:24px; padding:16px; display:flex; flex-direction:column; gap:12px;
+    }
+    .field label{
+      display:block; margin-bottom:6px; font-size:14px; font-weight:600; color:#334155;
+    }
+    .field input{
+      width:100%; border:1px solid #e2e8f0; border-radius:12px; padding:10px 12px; font-size:14px;
+      outline:none;
+    }
+    .field input[type="range"]{padding:0}
+    .modal-mask{
+      position:fixed; inset:0; background:rgba(0,0,0,.28);
+      display:none; align-items:flex-start; justify-content:center; padding:92px 16px 16px; z-index:50;
+    }
+    .modal-mask.show{display:flex}
+    .modal-card{
+      width:360px; max-width:92vw; border-radius:30px; background:#fff; box-shadow:0 20px 40px rgba(0,0,0,.18);
+      padding:18px 18px 28px; position:relative; overflow:hidden;
+    }
+    .modal-card .card-lines{opacity:.12}
+    .close-btn{
+      position:absolute; right:18px; top:18px; width:48px; height:48px; border-radius:50%;
+      border:3px solid var(--gray); color:var(--gray); background:transparent; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; font-size:24px; line-height:1; z-index:2;
+    }
+    .qr-stage{margin-top:52px; display:flex; justify-content:center}
+    .qr-box{
+      width:286px; height:286px; background:#fff; display:flex; align-items:center; justify-content:center;
+    }
+    #qrcode{width:286px; height:286px}
+    #qrcode img, #qrcode canvas{display:block !important; width:286px !important; height:286px !important}
+    .modal-tip{
+      margin-top:26px; text-align:center; font-size:16px; color:#d0d0d0;
+    }
+    .refresh-btn{
+      display:block; width:176px; height:54px; margin:26px auto 0; border:none; border-radius:14px;
+      background:var(--green); color:#fff; font-size:20px; font-weight:600; cursor:pointer;
+      box-shadow:0 2px 6px rgba(0,0,0,.12);
+    }
+    @media (max-width:480px){
+      body{padding:0}
+      .phone{border-radius:0; max-width:none}
+      .editor{max-width:none}
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="phone">
+      <div class="topbar">
+        <div class="left">‹</div>
+        <div class="title">电子校园卡</div>
+        <div class="more">···</div>
       </div>
-    </div>
-  );
-}
 
-function LocationMark() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-[14px] w-[14px] text-white/85" fill="currentColor" aria-hidden="true">
-      <path d="M12 2.8c-3.52 0-6.38 2.8-6.38 6.26 0 4.58 5.14 10.77 5.36 11.03a1.33 1.33 0 0 0 2.04 0c.22-.26 5.36-6.45 5.36-11.03 0-3.46-2.86-6.26-6.38-6.26Zm0 9.03a2.77 2.77 0 1 1 0-5.54 2.77 2.77 0 0 1 0 5.54Z" />
-    </svg>
-  );
-}
-
-function SmallQrIcon() {
-  return (
-    <div className="flex flex-col items-center">
-      <div className="grid grid-cols-2 gap-[3px] p-[2px]">
-        <span className="h-[11px] w-[11px] border-[3px] border-black" />
-        <span className="h-[11px] w-[11px] border-[3px] border-black" />
-        <span className="h-[11px] w-[11px] border-[3px] border-black" />
-        <span className="relative h-[11px] w-[11px] border-[3px] border-black">
-          <span className="absolute left-[1px] top-[1px] h-[2px] w-[2px] bg-black" />
-          <span className="absolute right-[1px] bottom-[1px] h-[2px] w-[2px] bg-black" />
-        </span>
-      </div>
-      <div className="mt-[2px] text-[12px] leading-none text-[#c96d47]" style={{ fontFamily: 'KaiTi, STKaiti, serif' }}>
-        支付码
-      </div>
-    </div>
-  );
-}
-
-function ModalQrCode({ onClose, qrValue, onRefresh }) {
-  return (
-    <div className="relative mx-auto w-full rounded-[30px] bg-white px-[18px] pb-[28px] pt-[18px] shadow-xl overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.12]">
-        <svg viewBox="0 0 360 520" className="h-full w-full">
-          <path d="M18 44C100 18 180 64 338 22" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-          <path d="M10 118C96 72 202 124 350 96" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-          <path d="M6 188C84 242 200 210 350 250" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-          <path d="M12 316C94 286 212 320 350 366" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-          <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-          <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-          <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+      <div class="scene">
+        <svg class="bg-dots" viewBox="0 0 414 760" preserveAspectRatio="none">
+          <path d="M52 32C40 130 130 190 290 280" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+          <path d="M362 44C294 120 280 230 206 320" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+          <path d="M376 256C338 392 366 522 332 718" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+          <path d="M74 650C140 548 182 470 278 392" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
         </svg>
-      </div>
 
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="关闭支付码"
-        className="absolute right-[18px] top-[18px] flex h-[48px] w-[48px] items-center justify-center rounded-full border-[3px] border-[#7f7f7f] text-[24px] leading-none text-[#7f7f7f] z-10"
-      >
-        ×
-      </button>
-
-      <div className="mt-[52px] flex justify-center">
-        <div className="flex h-[286px] w-[286px] items-center justify-center bg-white">
-          <QRCodeSVG
-            value={qrValue}
-            size={286}
-            level="M"
-            includeMargin={false}
-            bgColor="#ffffff"
-            fgColor="#000000"
-          />
-        </div>
-      </div>
-
-      <div className="mt-[26px] text-center text-[16px] text-[#d0d0d0]" style={{ fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif' }}>
-        二维码每60s刷新一次
-      </div>
-
-      <button
-        type="button"
-        onClick={onRefresh}
-        className="mx-auto mt-[26px] block h-[54px] w-[176px] rounded-[14px] bg-[#9ac43b] text-[20px] font-medium text-white shadow-sm"
-        style={{ fontFamily: 'PingFang SC, Microsoft YaHei, sans-serif' }}
-      >
-        刷新
-      </button>
-    </div>
-  );
-}
-
-export default function CampusCardEditor() {
-  const [name, setName] = useState('林骁');
-  const [sid, setSid] = useState('12432437');
-  const [department, setDepartment] = useState('机械与能源工程系');
-  const [status, setStatus] = useState('正常 可以入校');
-  const [photo, setPhoto] = useState('');
-  const [qrSeed, setQrSeed] = useState(() => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
-  const [showQr, setShowQr] = useState(false);
-  const [bannerImg, setBannerImg] = useState('');
-  const [bannerX, setBannerX] = useState(0);
-  const [bannerY, setBannerY] = useState(0);
-  const [bannerScale, setBannerScale] = useState(100);
-
-  const topBannerSrc = bannerImg || '';
-  const qrValue = useMemo(() => `campus-pay-${sid || '00000000'}-${qrSeed}`, [sid, qrSeed]);
-
-  const refreshQrCode = () => {
-    setQrSeed(`${Date.now()}-${Math.random().toString(36).slice(2, 12)}`);
-  };
-
-  const handlePhotoChange = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') setPhoto(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  return (
-    <div className="min-h-screen bg-[#ededed] p-0 sm:flex sm:justify-center sm:p-3">
-      <div className="w-full max-w-[414px] bg-[#f4f4f4] shadow-2xl sm:overflow-hidden sm:rounded-[34px]">
-        <div className="flex items-center justify-between px-[18px] pb-[8px] pt-[16px]">
-          <div className="text-[28px] leading-none text-black">‹</div>
-          <div className="text-[18px] font-semibold text-black">电子校园卡</div>
-          <div className="text-[24px] leading-none tracking-[-2px] text-black">···</div>
+        <div class="lang-row">
+          <div class="lang-label">中文/En</div>
+          <div class="toggle"></div>
         </div>
 
-        <div className="relative min-h-[760px] overflow-hidden bg-[linear-gradient(180deg,#a8d3cb_0%,#bbddd8_46%,#e1ddd8_100%)] px-0 pt-0">
-          <div className="pointer-events-none absolute inset-0 opacity-40">
-            <svg viewBox="0 0 414 760" className="h-full w-full">
-              <path d="M52 32C40 130 130 190 290 280" stroke="white" strokeDasharray="2 6" strokeWidth="1.4" fill="none" />
-              <path d="M362 44C294 120 280 230 206 320" stroke="white" strokeDasharray="2 6" strokeWidth="1.4" fill="none" />
-              <path d="M376 256C338 392 366 522 332 718" stroke="white" strokeDasharray="2 6" strokeWidth="1.4" fill="none" />
-              <path d="M74 650C140 548 182 470 278 392" stroke="white" strokeDasharray="2 6" strokeWidth="1.4" fill="none" />
+        <div class="location-row">
+          <div class="location-inner">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <path d="M12 2.8c-3.52 0-6.38 2.8-6.38 6.26 0 4.58 5.14 10.77 5.36 11.03a1.33 1.33 0 0 0 2.04 0c.22-.26 5.36-6.45 5.36-11.03 0-3.46-2.86-6.26-6.38-6.26Zm0 9.03a2.77 2.77 0 1 1 0-5.54 2.77 2.77 0 0 1 0 5.54Z"></path>
             </svg>
+            <span>南方科技大学</span>
+          </div>
+        </div>
+
+        <div class="campus-card">
+          <svg class="card-lines" viewBox="0 0 292 470" preserveAspectRatio="none">
+            <path d="M18 44C80 18 130 64 274 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+            <path d="M10 118C96 72 182 124 282 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+            <path d="M6 188C84 242 180 210 286 250" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+            <path d="M12 316C94 286 192 320 286 366" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+            <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+            <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+            <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          </svg>
+
+          <div class="card-top">
+            <div class="banner-box">
+              <img id="bannerImage" alt="顶部标识" style="display:none;">
+              <div id="bannerPlaceholder" class="banner-placeholder">上传顶部图片</div>
+            </div>
+
+            <button type="button" id="openQrBtn" class="small-qr-btn">
+              <div class="small-qr-grid">
+                <span></span><span></span><span></span><span class="special"></span>
+              </div>
+              <div class="small-qr-label">支付码</div>
+            </button>
           </div>
 
-          <div className="flex items-center justify-end gap-[10px] px-[24px] pt-[22px] text-white/90">
-            <div className="text-[12px] leading-none">中文/En</div>
-            <div className="relative h-[34px] w-[78px] rounded-full bg-[#efefef] shadow-inner">
-              <div className="absolute left-[2px] top-[2px] h-[30px] w-[30px] rounded-full bg-white shadow-md" />
+          <div class="photo-wrap">
+            <div class="photo-box">
+              <img id="photoImage" alt="证件照" style="display:none;">
+              <div id="photoPlaceholder">上传照片</div>
             </div>
           </div>
 
-          <div className="mt-[12px] flex justify-end px-[24px] text-white/90">
-            <div className="flex items-center gap-[6px] text-[16px]" style={{ fontFamily: 'KaiTi, STKaiti, serif' }}>
-              <LocationMark />
-              <span>南方科技大学</span>
-            </div>
+          <div class="info-block">
+            <div class="info-row"><span class="info-label">姓名：</span><span id="nameText">林骁</span></div>
+            <div class="info-row"><span class="info-label">SID：</span><span id="sidText">12432437</span></div>
+            <div class="info-row"><span class="info-label">部门：</span><span id="deptText">机械与能源工程系</span></div>
           </div>
 
-          <div className="mx-auto mt-[56px] w-[292px] rounded-[30px] bg-white/96 px-[18px] pb-[28px] pt-[18px] shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
-            <div className="pointer-events-none absolute opacity-[0.12]" />
-            <div className="absolute left-0 top-0 hidden" />
-
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-0 opacity-[0.14]">
-                <svg viewBox="0 0 292 470" className="h-full w-full">
-                  <path d="M18 44C80 18 130 64 274 22" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-                  <path d="M10 118C96 72 182 124 282 96" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-                  <path d="M6 188C84 242 180 210 286 250" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-                  <path d="M12 316C94 286 192 320 286 366" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-                  <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-                  <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
-                  <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" strokeWidth="1.1" fill="none" />
+          <div class="status-grid">
+            <div class="status-col">
+              <div class="status-title">卡状态</div>
+              <div class="status-values">
+                <div>正常</div>
+                <div>可以入校</div>
+              </div>
+            </div>
+            <div class="status-col">
+              <div class="status-title">卡内余额</div>
+              <div class="eye-wrap">
+                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
                 </svg>
               </div>
-
-              <div className="relative flex items-start justify-between gap-[8px]">
-                <div className="relative h-[54px] w-[214px] overflow-hidden rounded-[4px] bg-transparent">
-                  {topBannerSrc ? (
-                    <img
-                      src={topBannerSrc}
-                      alt="顶部标识"
-                      className="absolute left-0 top-0 max-w-none object-contain"
-                      style={{
-                        transform: `translate(${bannerX}px, ${bannerY}px) scale(${bannerScale / 100})`,
-                        transformOrigin: 'top left',
-                        width: '206px',
-                        height: '48px'
-                      }}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center rounded-[4px] border border-dashed border-slate-300 text-[12px] text-slate-400">
-                      上传顶部图片
-                    </div>
-                  )}
-                </div>
-                <button type="button" onClick={() => setShowQr(true)} className="pt-[2px] shrink-0">
-                  <SmallQrIcon />
-                </button>
-              </div>
-
-              <div className="mt-[24px] flex justify-center">
-                <div className="h-[146px] w-[118px] overflow-hidden bg-[#f1f1f1]">
-                  {photo ? (
-                    <img src={photo} alt="证件照" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-[12px] text-slate-400">上传照片</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-[28px] pl-[34px] text-black" style={{ fontFamily: 'KaiTi, STKaiti, serif' }}>
-                <div className="mb-[12px] flex items-center text-[16px] leading-none whitespace-nowrap">
-                  <span className="inline-block w-[52px]">姓名：</span>
-                  <span>{name}</span>
-                </div>
-                <div className="mb-[12px] flex items-center text-[16px] leading-none whitespace-nowrap">
-                  <span className="inline-block w-[52px]">SID：</span>
-                  <span>{sid}</span>
-                </div>
-                <div className="flex items-center text-[16px] leading-none whitespace-nowrap">
-                  <span className="inline-block w-[52px]">部门：</span>
-                  <span>{department}</span>
-                </div>
-              </div>
-
-              <div className="mt-[58px] grid grid-cols-2 text-center" style={{ fontFamily: 'KaiTi, STKaiti, serif' }}>
-                <div className="border-r border-[#d1d1d1]">
-                  <div className="text-[16px] text-black">卡状态</div>
-                  <div className="mt-[18px] space-y-[6px] text-[16px] leading-none text-[#96c13d]">
-                    <div>正常</div>
-                    <div>可以入校</div>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[16px] text-black">卡内余额</div>
-                  <div className="mt-[18px] flex justify-center text-[#96c13d]">
-                    <svg viewBox="0 0 24 24" className="h-[34px] w-[34px]" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
-
-          <BottomPadButton />
-        </div>
-
-        <div className="bg-[#f4f4f4] pb-[12px] pt-[8px]">
-          <div className="flex items-center justify-center gap-[72px] text-slate-500">
-            <div className="text-[42px] font-light leading-none">‹</div>
-            <div className="text-[42px] font-light leading-none">›</div>
           </div>
         </div>
 
-        {showQr && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/28 px-4 pt-[92px]" onClick={() => setShowQr(false)}>
-            <div className="w-[360px] max-w-[92vw]" onClick={(e) => e.stopPropagation()}>
-              <ModalQrCode onClose={() => setShowQr(false)} qrValue={qrValue} onRefresh={refreshQrCode} />
-            </div>
-          </div>
-        )}
-
-        <div className="mx-auto max-w-[414px] bg-white px-4 py-4">
-          <div className="space-y-3 rounded-[24px] border border-slate-200 p-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">上传左上角图片</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    if (typeof reader.result === 'string') setBannerImg(reader.result);
-                  };
-                  reader.readAsDataURL(file);
-                }}
-                className="block w-full rounded-xl border border-slate-200 p-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">左上角图片左右位置</label>
-              <input
-                type="range"
-                min="-120"
-                max="120"
-                value={bannerX}
-                onChange={(e) => setBannerX(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">左上角图片上下位置</label>
-              <input
-                type="range"
-                min="-60"
-                max="60"
-                value={bannerY}
-                onChange={(e) => setBannerY(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">左上角图片缩放</label>
-              <input
-                type="range"
-                min="50"
-                max="180"
-                value={bannerScale}
-                onChange={(e) => setBannerScale(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">上传照片</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                className="block w-full rounded-xl border border-slate-200 p-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">姓名</label>
-              <input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-300"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">SID</label>
-              <input
-                value={sid}
-                onChange={(event) => setSid(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-300"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">部门</label>
-              <input
-                value={department}
-                onChange={(event) => setDepartment(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-300"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">卡状态</label>
-              <input
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-300"
-              />
-            </div>
+        <div class="decor-pad" aria-hidden="true">
+          <div class="grid">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
           </div>
         </div>
       </div>
+
+      <div class="bottom-nav"><span>‹</span><span>›</span></div>
     </div>
-  );
-}
+
+    <div class="editor">
+      <div class="panel">
+        <div class="field">
+          <label for="bannerUpload">上传左上角图片</label>
+          <input id="bannerUpload" type="file" accept="image/*">
+        </div>
+        <div class="field">
+          <label for="bannerX">左上角图片左右位置</label>
+          <input id="bannerX" type="range" min="-120" max="120" value="0">
+        </div>
+        <div class="field">
+          <label for="bannerY">左上角图片上下位置</label>
+          <input id="bannerY" type="range" min="-60" max="60" value="0">
+        </div>
+        <div class="field">
+          <label for="bannerScale">左上角图片缩放</label>
+          <input id="bannerScale" type="range" min="50" max="180" value="100">
+        </div>
+        <div class="field">
+          <label for="photoUpload">上传照片</label>
+          <input id="photoUpload" type="file" accept="image/*">
+        </div>
+        <div class="field">
+          <label for="nameInput">姓名</label>
+          <input id="nameInput" type="text" value="林骁">
+        </div>
+        <div class="field">
+          <label for="sidInput">SID</label>
+          <input id="sidInput" type="text" value="12432437">
+        </div>
+        <div class="field">
+          <label for="deptInput">部门</label>
+          <input id="deptInput" type="text" value="机械与能源工程系">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="qrModal" class="modal-mask">
+    <div class="modal-card" id="modalCard">
+      <svg class="card-lines" viewBox="0 0 360 520" preserveAspectRatio="none">
+        <path d="M18 44C100 18 180 64 338 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M10 118C96 72 202 124 350 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M6 188C84 242 200 210 350 250" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M12 316C94 286 212 320 350 366" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+      </svg>
+      <button id="closeQrBtn" class="close-btn" type="button" aria-label="关闭支付码">×</button>
+      <div class="qr-stage"><div class="qr-box"><div id="qrcode"></div></div></div>
+      <div class="modal-tip">二维码每60s刷新一次</div>
+      <button id="refreshQrBtn" class="refresh-btn" type="button">刷新</button>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      name: "林骁",
+      sid: "12432437",
+      department: "机械与能源工程系",
+      bannerX: 0,
+      bannerY: 0,
+      bannerScale: 100,
+      qrSeed: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+    };
+
+    const el = {
+      nameInput: document.getElementById('nameInput'),
+      sidInput: document.getElementById('sidInput'),
+      deptInput: document.getElementById('deptInput'),
+      nameText: document.getElementById('nameText'),
+      sidText: document.getElementById('sidText'),
+      deptText: document.getElementById('deptText'),
+      photoUpload: document.getElementById('photoUpload'),
+      photoImage: document.getElementById('photoImage'),
+      photoPlaceholder: document.getElementById('photoPlaceholder'),
+      bannerUpload: document.getElementById('bannerUpload'),
+      bannerImage: document.getElementById('bannerImage'),
+      bannerPlaceholder: document.getElementById('bannerPlaceholder'),
+      bannerX: document.getElementById('bannerX'),
+      bannerY: document.getElementById('bannerY'),
+      bannerScale: document.getElementById('bannerScale'),
+      openQrBtn: document.getElementById('openQrBtn'),
+      qrModal: document.getElementById('qrModal'),
+      modalCard: document.getElementById('modalCard'),
+      closeQrBtn: document.getElementById('closeQrBtn'),
+      refreshQrBtn: document.getElementById('refreshQrBtn'),
+      qrcode: document.getElementById('qrcode')
+    };
+
+    function updateInfo() {
+      el.nameText.textContent = state.name || '';
+      el.sidText.textContent = state.sid || '';
+      el.deptText.textContent = state.department || '';
+    }
+
+    function updateBannerTransform() {
+      el.bannerImage.style.transform =
+        `translate(${state.bannerX}px, ${state.bannerY}px) scale(${state.bannerScale / 100})`;
+    }
+
+    function readImage(file, callback) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => callback(reader.result);
+      reader.readAsDataURL(file);
+    }
+
+    function getQrValue() {
+      return `campus-pay-${state.sid || '00000000'}-${state.qrSeed}`;
+    }
+
+    function drawQr() {
+      el.qrcode.innerHTML = '';
+      new QRCode(el.qrcode, {
+        text: getQrValue(),
+        width: 286,
+        height: 286,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    function refreshQr() {
+      state.qrSeed = `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+      drawQr();
+    }
+
+    el.nameInput.addEventListener('input', e => {
+      state.name = e.target.value;
+      updateInfo();
+    });
+
+    el.sidInput.addEventListener('input', e => {
+      state.sid = e.target.value;
+      updateInfo();
+      drawQr();
+    });
+
+    el.deptInput.addEventListener('input', e => {
+      state.department = e.target.value;
+      updateInfo();
+    });
+
+    el.photoUpload.addEventListener('change', e => {
+      const file = e.target.files && e.target.files[0];
+      readImage(file, src => {
+        el.photoImage.src = src;
+        el.photoImage.style.display = 'block';
+        el.photoPlaceholder.style.display = 'none';
+      });
+    });
+
+    el.bannerUpload.addEventListener('change', e => {
+      const file = e.target.files && e.target.files[0];
+      readImage(file, src => {
+        el.bannerImage.src = src;
+        el.bannerImage.style.display = 'block';
+        el.bannerPlaceholder.style.display = 'none';
+        updateBannerTransform();
+      });
+    });
+
+    el.bannerX.addEventListener('input', e => {
+      state.bannerX = Number(e.target.value);
+      updateBannerTransform();
+    });
+
+    el.bannerY.addEventListener('input', e => {
+      state.bannerY = Number(e.target.value);
+      updateBannerTransform();
+    });
+
+    el.bannerScale.addEventListener('input', e => {
+      state.bannerScale = Number(e.target.value);
+      updateBannerTransform();
+    });
+
+    el.openQrBtn.addEventListener('click', () => {
+      el.qrModal.classList.add('show');
+      drawQr();
+    });
+
+    el.closeQrBtn.addEventListener('click', () => {
+      el.qrModal.classList.remove('show');
+    });
+
+    el.qrModal.addEventListener('click', e => {
+      if (e.target === el.qrModal) {
+        el.qrModal.classList.remove('show');
+      }
+    });
+
+    el.refreshQrBtn.addEventListener('click', refreshQr);
+
+    updateInfo();
+    updateBannerTransform();
+  </script>
+</body>
+</html>
+""")
+
+path = "/mnt/data/campus_card_github_ready.html"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(html)
+
+print(path)
