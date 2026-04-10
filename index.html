@@ -6,12 +6,29 @@
   <title>电子校园卡</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    :root{--bg-top:#a9d4cc;--bg-mid:#c0dfda;--bg-bottom:#e4ddd7;--card-bg:rgba(255,255,255,.96);--green:#9ec63b;--green-dark:#9abf39;--gray:#7f7f7f;--brown:#ca7557}
-    *{box-sizing:border-box} html,body{margin:0;padding:0;background:#ededed;font-family:"PingFang SC","Microsoft YaHei",sans-serif}
-    body{min-height:100vh} .app{width:100%;max-width:414px;margin:0 auto;min-height:100vh;position:relative;overflow:hidden;background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-mid) 56%,var(--bg-bottom) 100%)}
+    :root{
+      --bg-top:#a9d4cc;
+      --bg-mid:#c0dfda;
+      --bg-bottom:#e4ddd7;
+      --card-bg:rgba(255,255,255,.96);
+      --green:#9ec63b;
+      --green-dark:#9abf39;
+      --gray:#7f7f7f;
+      --brown:#ca7557;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:#ededed;font-family:"PingFang SC","Microsoft YaHei",sans-serif}
+    body{min-height:100vh}
+    .page{display:flex;gap:20px;align-items:flex-start;justify-content:center;padding:16px}
+    .app{
+      width:100%;max-width:414px;min-height:100vh;position:relative;overflow:hidden;
+      background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-mid) 56%,var(--bg-bottom) 100%);
+      border-radius:28px;box-shadow:0 18px 40px rgba(0,0,0,.14)
+    }
     .bg-dots{position:absolute;inset:0;pointer-events:none;opacity:.42}
     .lang-row{position:relative;z-index:1;display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:44px 24px 0;color:rgba(255,255,255,.92)}
-    .lang-label{font-size:12px;line-height:1} .toggle{width:104px;height:42px;border-radius:999px;background:#ececec;position:relative;box-shadow:inset 0 1px 2px rgba(0,0,0,.08),0 3px 8px rgba(0,0,0,.08)}
+    .lang-label{font-size:12px;line-height:1}
+    .toggle{width:104px;height:42px;border-radius:999px;background:#ececec;position:relative;box-shadow:inset 0 1px 2px rgba(0,0,0,.08),0 3px 8px rgba(0,0,0,.08)}
     .toggle::after{content:"";position:absolute;left:2px;top:2px;width:38px;height:38px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18)}
     .location-row{position:relative;z-index:1;margin-top:18px;display:flex;justify-content:flex-end;padding:0 24px;color:rgba(255,255,255,.9);font-family:"KaiTi","STKaiti",serif;font-size:16px}
     .location-inner{display:flex;align-items:center;gap:6px}
@@ -35,61 +52,99 @@
     .photo-box img{width:100%;height:100%;object-fit:cover}
     .info-block{margin-top:28px;padding-left:34px;color:#000;font-family:"KaiTi","STKaiti",serif}
     .info-row{margin-bottom:12px;display:flex;align-items:center;font-size:16px;line-height:1;white-space:nowrap}
-    .info-row:last-child{margin-bottom:0}.info-label{display:inline-block;width:52px}
+    .info-row:last-child{margin-bottom:0}
+    .info-label{display:inline-block;width:52px}
     .status-grid{margin-top:58px;display:grid;grid-template-columns:1fr 1fr;text-align:center;font-family:"KaiTi","STKaiti",serif}
-    .status-col:first-child{border-right:1px solid #d1d1d1}.status-title{font-size:16px;color:#000}
+    .status-col:first-child{border-right:1px solid #d1d1d1}
+    .status-title{font-size:16px;color:#000}
     .status-values{margin-top:18px;color:var(--green-dark);font-size:16px;line-height:1;display:flex;flex-direction:column;gap:6px}
     .eye-wrap{margin-top:18px;display:flex;justify-content:center;color:var(--green-dark)}
     .decor-pad{position:absolute;right:18px;bottom:26px;width:54px;height:54px;border-radius:50%;background:var(--green);box-shadow:0 6px 14px rgba(0,0,0,.16);display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
-    .decor-pad .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.decor-pad .dot{width:4px;height:4px;background:#fff;border-radius:50%}
+    .decor-pad .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+    .decor-pad .dot{width:4px;height:4px;background:#fff;border-radius:50%}
+    .editor{width:360px;background:#fff;border:1px solid #e2e8f0;border-radius:24px;padding:18px;box-shadow:0 10px 30px rgba(15,23,42,.08);position:sticky;top:16px}
+    .editor h2{margin:0 0 6px;font-size:22px}
+    .editor p{margin:0 0 14px;color:#64748b;font-size:13px;line-height:1.6}
+    .field{margin-bottom:12px}
+    .field label{display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:#334155}
+    .field input{width:100%;padding:10px 12px;border:1px solid #dbe2ea;border-radius:12px;font-size:14px}
+    .field input[type="range"]{padding:0}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btns button{border:none;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600;cursor:pointer}
+    .primary{background:#2563eb;color:#fff}
+    .secondary{background:#e2e8f0;color:#0f172a}
     .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.28);display:none;align-items:flex-start;justify-content:center;padding:20px 14px 14px;z-index:50}
     .modal-mask.show{display:flex}
     .modal-card{width:336px;max-width:92vw;border-radius:30px;background:#fff;box-shadow:0 20px 40px rgba(0,0,0,.18);padding:18px 18px 26px;position:relative;overflow:hidden;margin-top:12px}
     .close-btn{position:absolute;right:20px;top:20px;width:46px;height:46px;border-radius:50%;border:3px solid var(--gray);color:var(--gray);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;z-index:2}
-    .qr-stage{margin-top:54px;display:flex;justify-content:center}.qr-box{width:248px;height:248px;background:#fff;display:flex;align-items:center;justify-content:center}
+    .qr-stage{margin-top:54px;display:flex;justify-content:center}
+    .qr-box{width:248px;height:248px;background:#fff;display:flex;align-items:center;justify-content:center}
     #qrcode{width:248px;height:248px;display:flex;align-items:center;justify-content:center}
     #qrcode img,#qrcode canvas{display:block!important;max-width:248px!important;max-height:248px!important;width:248px!important;height:248px!important;object-fit:contain!important;background:#fff}
-    .modal-tip{margin-top:18px;text-align:center;font-size:16px;color:#d0d0d0}.refresh-btn{display:block;width:170px;height:54px;margin:22px auto 0;border:none;border-radius:14px;background:var(--green);color:#fff;font-size:19px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+    .modal-tip{margin-top:18px;text-align:center;font-size:16px;color:#d0d0d0}
+    .refresh-btn{display:block;width:170px;height:54px;margin:22px auto 0;border:none;border-radius:14px;background:var(--green);color:#fff;font-size:19px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+    @media (max-width: 900px){
+      .page{flex-direction:column;align-items:center}
+      .editor{width:min(360px,100%);position:static}
+      .app{min-height:auto;border-radius:28px}
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <svg class="bg-dots" viewBox="0 0 414 760" preserveAspectRatio="none">
-      <path d="M52 32C40 130 130 190 290 280" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
-      <path d="M362 44C294 120 280 230 206 320" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
-      <path d="M376 256C338 392 366 522 332 718" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
-      <path d="M74 650C140 548 182 470 278 392" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
-    </svg>
-    <div class="lang-row"><div class="lang-label">中文/En</div><div class="toggle"></div></div>
-    <div class="location-row"><div class="location-inner"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2.8c-3.52 0-6.38 2.8-6.38 6.26 0 4.58 5.14 10.77 5.36 11.03a1.33 1.33 0 0 0 2.04 0c.22-.26 5.36-6.45 5.36-11.03 0-3.46-2.86-6.26-6.38-6.26Zm0 9.03a2.77 2.77 0 1 1 0-5.54 2.77 2.77 0 0 1 0 5.54Z"></path></svg><span>南方科技大学</span></div></div>
-
-    <div class="campus-card">
-      <svg class="card-lines" viewBox="0 0 292 470" preserveAspectRatio="none">
-        <path d="M18 44C80 18 130 64 274 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-        <path d="M10 118C96 72 182 124 282 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-        <path d="M6 188C84 242 180 210 286 250" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-        <path d="M12 316C94 286 192 320 286 366" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-        <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-        <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-        <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+  <div class="page">
+    <div class="app">
+      <svg class="bg-dots" viewBox="0 0 414 760" preserveAspectRatio="none">
+        <path d="M52 32C40 130 130 190 290 280" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+        <path d="M362 44C294 120 280 230 206 320" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+        <path d="M376 256C338 392 366 522 332 718" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+        <path d="M74 650C140 548 182 470 278 392" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
       </svg>
-      <div class="card-top">
-        <div class="banner-box"><img id="bannerImage" alt="顶部标识" style="display:none;"><div id="bannerFallback" class="banner-fallback">未配置顶部图片</div></div>
-        <button type="button" id="openQrBtn" class="small-qr-btn"><div class="small-qr-wrap"><div class="small-qr-grid"><span></span><span></span><span></span><span class="special"></span></div><div class="small-qr-label">支付码</div></div></button>
+      <div class="lang-row"><div class="lang-label">中文/En</div><div class="toggle"></div></div>
+      <div class="location-row"><div class="location-inner"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2.8c-3.52 0-6.38 2.8-6.38 6.26 0 4.58 5.14 10.77 5.36 11.03a1.33 1.33 0 0 0 2.04 0c.22-.26 5.36-6.45 5.36-11.03 0-3.46-2.86-6.26-6.38-6.26Zm0 9.03a2.77 2.77 0 1 1 0-5.54 2.77 2.77 0 0 1 0 5.54Z"></path></svg><span>南方科技大学</span></div></div>
+      <div class="campus-card">
+        <svg class="card-lines" viewBox="0 0 292 470" preserveAspectRatio="none">
+          <path d="M18 44C80 18 130 64 274 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M10 118C96 72 182 124 282 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M6 188C84 242 180 210 286 250" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M12 316C94 286 192 320 286 366" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+        </svg>
+        <div class="card-top">
+          <div class="banner-box"><img id="bannerImage" alt="顶部标识" style="display:none;"><div id="bannerFallback" class="banner-fallback">上传顶部图片</div></div>
+          <button type="button" id="openQrBtn" class="small-qr-btn"><div class="small-qr-wrap"><div class="small-qr-grid"><span></span><span></span><span></span><span class="special"></span></div><div class="small-qr-label">支付码</div></div></button>
+        </div>
+        <div class="photo-wrap"><div class="photo-box"><img id="photoImage" alt="证件照" style="display:none;"><div id="photoFallback" class="photo-fallback">上传照片</div></div></div>
+        <div class="info-block">
+          <div class="info-row"><span class="info-label">姓名：</span><span id="nameText">林骁</span></div>
+          <div class="info-row"><span class="info-label">SID：</span><span id="sidText">12432437</span></div>
+          <div class="info-row"><span class="info-label">部门：</span><span id="deptText">机械与能源工程系</span></div>
+        </div>
+        <div class="status-grid">
+          <div class="status-col"><div class="status-title">卡状态</div><div class="status-values"><div>正常</div><div>可以入校</div></div></div>
+          <div class="status-col"><div class="status-title">卡内余额</div><div class="eye-wrap"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></div></div>
+        </div>
       </div>
-      <div class="photo-wrap"><div class="photo-box"><img id="photoImage" alt="证件照" style="display:none;"><div id="photoFallback" class="photo-fallback">未配置照片</div></div></div>
-      <div class="info-block">
-        <div class="info-row"><span class="info-label">姓名：</span><span id="nameText">林骁</span></div>
-        <div class="info-row"><span class="info-label">SID：</span><span id="sidText">12432437</span></div>
-        <div class="info-row"><span class="info-label">部门：</span><span id="deptText">机械与能源工程系</span></div>
-      </div>
-      <div class="status-grid">
-        <div class="status-col"><div class="status-title">卡状态</div><div class="status-values"><div>正常</div><div>可以入校</div></div></div>
-        <div class="status-col"><div class="status-title">卡内余额</div><div class="eye-wrap"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg></div></div>
-      </div>
+      <div class="decor-pad" aria-hidden="true"><div class="grid"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
     </div>
 
-    <div class="decor-pad" aria-hidden="true"><div class="grid"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+    <div class="editor">
+      <h2>单文件编辑器</h2>
+      <p>改完后点击“保存到浏览器”。同一浏览器再次打开这个页面会保留配置。把这个文件发给别人，他们也可以直接改。</p>
+      <div class="field"><label for="bannerUpload">上传左上角图片</label><input id="bannerUpload" type="file" accept="image/*"></div>
+      <div class="row">
+        <div class="field"><label for="bannerX">左右位置</label><input id="bannerX" type="range" min="-120" max="120" value="0"></div>
+        <div class="field"><label for="bannerY">上下位置</label><input id="bannerY" type="range" min="-60" max="60" value="0"></div>
+      </div>
+      <div class="field"><label for="bannerScale">缩放</label><input id="bannerScale" type="range" min="50" max="180" value="100"></div>
+      <div class="field"><label for="photoUpload">上传照片</label><input id="photoUpload" type="file" accept="image/*"></div>
+      <div class="field"><label for="nameInput">姓名</label><input id="nameInput" type="text" value="林骁"></div>
+      <div class="field"><label for="sidInput">SID</label><input id="sidInput" type="text" value="12432437"></div>
+      <div class="field"><label for="deptInput">部门</label><input id="deptInput" type="text" value="机械与能源工程系"></div>
+      <div class="btns"><button id="saveBtn" class="primary" type="button">保存到浏览器</button><button id="resetBtn" class="secondary" type="button">恢复默认</button></div>
+    </div>
   </div>
 
   <div id="qrModal" class="modal-mask">
@@ -112,13 +167,25 @@
 
   <script>
     const DEFAULTS={name:"林骁",sid:"12432437",department:"机械与能源工程系",bannerImg:"",bannerX:0,bannerY:0,bannerScale:100,photoImg:""};
-    function loadConfig(){try{return {...DEFAULTS,...(JSON.parse(localStorage.getItem("campusCardConfig")||"{}"))};}catch{return {...DEFAULTS};}}
-    const state={...loadConfig(),qrSeed:`${Date.now()}-${Math.random().toString(36).slice(2,10)}`};
-    const el={bannerImage:document.getElementById("bannerImage"),bannerFallback:document.getElementById("bannerFallback"),photoImage:document.getElementById("photoImage"),photoFallback:document.getElementById("photoFallback"),nameText:document.getElementById("nameText"),sidText:document.getElementById("sidText"),deptText:document.getElementById("deptText"),openQrBtn:document.getElementById("openQrBtn"),qrModal:document.getElementById("qrModal"),closeQrBtn:document.getElementById("closeQrBtn"),refreshQrBtn:document.getElementById("refreshQrBtn"),qrcode:document.getElementById("qrcode")};
-    function applyConfig(){el.nameText.textContent=state.name||"";el.sidText.textContent=state.sid||"";el.deptText.textContent=state.department||"";if(state.photoImg){el.photoImage.src=state.photoImg;el.photoImage.style.display="block";el.photoFallback.style.display="none";}else{el.photoImage.style.display="none";el.photoFallback.style.display="flex";}if(state.bannerImg){el.bannerImage.src=state.bannerImg;el.bannerImage.style.display="block";el.bannerFallback.style.display="none";el.bannerImage.style.transform=`translate(${Number(state.bannerX)||0}px, ${Number(state.bannerY)||0}px) scale(${(Number(state.bannerScale)||100)/100})`;}else{el.bannerImage.style.display="none";el.bannerFallback.style.display="flex";}}
+    function loadConfig(){try{return {...DEFAULTS,...(JSON.parse(localStorage.getItem("campusCardSingleFileConfig")||"{}"))};}catch{return {...DEFAULTS};}}
+    let state={...loadConfig(),qrSeed:`${Date.now()}-${Math.random().toString(36).slice(2,10)}`};
+    const el={bannerImage:document.getElementById("bannerImage"),bannerFallback:document.getElementById("bannerFallback"),photoImage:document.getElementById("photoImage"),photoFallback:document.getElementById("photoFallback"),nameText:document.getElementById("nameText"),sidText:document.getElementById("sidText"),deptText:document.getElementById("deptText"),openQrBtn:document.getElementById("openQrBtn"),qrModal:document.getElementById("qrModal"),closeQrBtn:document.getElementById("closeQrBtn"),refreshQrBtn:document.getElementById("refreshQrBtn"),qrcode:document.getElementById("qrcode"),bannerUpload:document.getElementById("bannerUpload"),bannerX:document.getElementById("bannerX"),bannerY:document.getElementById("bannerY"),bannerScale:document.getElementById("bannerScale"),photoUpload:document.getElementById("photoUpload"),nameInput:document.getElementById("nameInput"),sidInput:document.getElementById("sidInput"),deptInput:document.getElementById("deptInput"),saveBtn:document.getElementById("saveBtn"),resetBtn:document.getElementById("resetBtn")};
+    function applyConfig(){el.nameText.textContent=state.name||"";el.sidText.textContent=state.sid||"";el.deptText.textContent=state.department||"";el.nameInput.value=state.name||"";el.sidInput.value=state.sid||"";el.deptInput.value=state.department||"";el.bannerX.value=Number(state.bannerX)||0;el.bannerY.value=Number(state.bannerY)||0;el.bannerScale.value=Number(state.bannerScale)||100;if(state.photoImg){el.photoImage.src=state.photoImg;el.photoImage.style.display="block";el.photoFallback.style.display="none";}else{el.photoImage.style.display="none";el.photoFallback.style.display="flex";}if(state.bannerImg){el.bannerImage.src=state.bannerImg;el.bannerImage.style.display="block";el.bannerFallback.style.display="none";el.bannerImage.style.transform=`translate(${Number(state.bannerX)||0}px, ${Number(state.bannerY)||0}px) scale(${(Number(state.bannerScale)||100)/100})`;}else{el.bannerImage.style.display="none";el.bannerFallback.style.display="flex";}}
+    function saveConfig(){localStorage.setItem("campusCardSingleFileConfig",JSON.stringify({...state,qrSeed:undefined}));}
+    function readImage(file,cb){if(!file)return;const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file);}
     function getQrValue(){return `campus-pay-${state.sid||"00000000"}-${state.qrSeed}`;}
     function drawQr(){el.qrcode.innerHTML="";new QRCode(el.qrcode,{text:getQrValue(),width:248,height:248,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}
     function refreshQr(){state.qrSeed=`${Date.now()}-${Math.random().toString(36).slice(2,12)}`;drawQr();}
+    el.bannerUpload.addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];readImage(f,src=>{state.bannerImg=src;applyConfig();});});
+    el.photoUpload.addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];readImage(f,src=>{state.photoImg=src;applyConfig();});});
+    el.bannerX.addEventListener("input",e=>{state.bannerX=Number(e.target.value);applyConfig();});
+    el.bannerY.addEventListener("input",e=>{state.bannerY=Number(e.target.value);applyConfig();});
+    el.bannerScale.addEventListener("input",e=>{state.bannerScale=Number(e.target.value);applyConfig();});
+    el.nameInput.addEventListener("input",e=>{state.name=e.target.value;applyConfig();});
+    el.sidInput.addEventListener("input",e=>{state.sid=e.target.value;applyConfig();});
+    el.deptInput.addEventListener("input",e=>{state.department=e.target.value;applyConfig();});
+    el.saveBtn.addEventListener("click",()=>{saveConfig();alert("已保存到当前浏览器。")});
+    el.resetBtn.addEventListener("click",()=>{state={...DEFAULTS,qrSeed:`${Date.now()}-${Math.random().toString(36).slice(2,10)}`};saveConfig();applyConfig();alert("已恢复默认。")});
     el.openQrBtn.addEventListener("click",()=>{el.qrModal.classList.add("show");drawQr();});
     el.closeQrBtn.addEventListener("click",()=>el.qrModal.classList.remove("show"));
     el.qrModal.addEventListener("click",e=>{if(e.target===el.qrModal)el.qrModal.classList.remove("show");});
