@@ -11,7 +11,7 @@
   "banner": "./banner.png",
   "photo": "./photo.jpg",
 
-  "bannerX": 0,
+  "bannerX": -5,
   "bannerY": 0,
   "bannerScale": 100,
 
