@@ -1,6 +1,3 @@
-from textwrap import dedent
-
-html = dedent(r"""
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -13,340 +10,262 @@ html = dedent(r"""
       --bg-top:#a8d3cb;
       --bg-mid:#bbddd8;
       --bg-bottom:#e1ddd8;
-      --card-bg:rgba(255,255,255,0.96);
+      --card-bg:rgba(255,255,255,.96);
       --line:#e2b8b0;
       --green:#9ac43b;
       --green-dark:#96c13d;
       --gray:#7f7f7f;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      min-height:100vh;
-      background:#ededed;
-      font-family:"PingFang SC","Microsoft YaHei",sans-serif;
-      display:flex;
-      justify-content:center;
-      padding:12px;
-    }
+    html,body{margin:0;padding:0;background:#ededed;font-family:"PingFang SC","Microsoft YaHei",sans-serif}
+    body{min-height:100vh;display:flex;justify-content:center}
     .phone{
       width:100%;
       max-width:414px;
+      min-height:100vh;
       background:#f4f4f4;
-      box-shadow:0 24px 48px rgba(0,0,0,.16);
-      border-radius:34px;
+      position:relative;
       overflow:hidden;
     }
     .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:16px 18px 8px;
-      background:#f4f4f4;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px 18px 8px;background:#f4f4f4;
     }
-    .topbar .left{font-size:28px; line-height:1}
-    .topbar .title{font-size:18px; font-weight:600}
-    .topbar .more{font-size:24px; line-height:1; letter-spacing:-2px}
+    .topbar .left{font-size:28px;line-height:1}
+    .topbar .title-wrap{text-align:center}
+    .topbar .title{font-size:18px;font-weight:600;line-height:1.2}
+    .topbar .sub{font-size:10px;color:#666;line-height:1.1;margin-top:3px}
+    .topbar .more{font-size:24px;line-height:1;letter-spacing:-2px}
     .scene{
       position:relative;
-      min-height:760px;
+      min-height:calc(100vh - 74px);
       background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-mid) 46%,var(--bg-bottom) 100%);
       overflow:hidden;
+      padding-bottom:96px;
     }
-    .bg-dots, .bg-dots2{
-      position:absolute; inset:0; pointer-events:none; opacity:.4;
+    .bg-dots{
+      position:absolute;inset:0;pointer-events:none;opacity:.4;
     }
     .lang-row{
-      display:flex; align-items:center; justify-content:flex-end;
-      gap:10px; padding:22px 24px 0; color:rgba(255,255,255,.9);
-      position:relative; z-index:1;
+      display:flex;align-items:center;justify-content:flex-end;gap:10px;
+      padding:22px 24px 0;color:rgba(255,255,255,.9);position:relative;z-index:1;
     }
-    .lang-label{font-size:12px; line-height:1}
+    .lang-label{font-size:12px;line-height:1}
     .toggle{
-      width:78px;height:34px;border-radius:999px;background:#efefef; position:relative;
+      width:78px;height:34px;border-radius:999px;background:#efefef;position:relative;
       box-shadow:inset 0 1px 2px rgba(0,0,0,.08);
     }
     .toggle::after{
-      content:""; position:absolute; left:2px; top:2px; width:30px; height:30px; border-radius:50%;
-      background:white; box-shadow:0 2px 5px rgba(0,0,0,.18);
+      content:"";position:absolute;left:2px;top:2px;width:30px;height:30px;border-radius:50%;
+      background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18);
     }
     .location-row{
-      margin-top:12px; display:flex; justify-content:flex-end; padding:0 24px;
-      color:rgba(255,255,255,.9); position:relative; z-index:1;
-      font-family:"KaiTi","STKaiti",serif; font-size:16px;
+      margin-top:12px;display:flex;justify-content:flex-end;padding:0 24px;
+      color:rgba(255,255,255,.9);position:relative;z-index:1;
+      font-family:"KaiTi","STKaiti",serif;font-size:16px;
     }
-    .location-inner{display:flex; align-items:center; gap:6px}
+    .location-inner{display:flex;align-items:center;gap:6px}
     .campus-card{
-      width:292px; margin:56px auto 0; border-radius:30px; background:var(--card-bg);
-      padding:18px 18px 28px; position:relative; box-shadow:0 8px 24px rgba(0,0,0,.04);
+      width:292px;
+      margin:56px auto 0;
+      border-radius:30px;
+      background:var(--card-bg);
+      padding:18px 18px 28px;
+      position:relative;
+      box-shadow:0 8px 24px rgba(0,0,0,.04);
       z-index:1;
     }
     .card-lines{
-      position:absolute; inset:0; opacity:.14; pointer-events:none;
+      position:absolute;inset:0;opacity:.14;pointer-events:none;
     }
-    .card-top{
-      position:relative; display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
-    }
-    .banner-box{
-      position:relative; width:214px; height:54px; overflow:hidden; border-radius:4px;
-    }
+    .card-top{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .banner-box{position:relative;width:214px;height:54px;overflow:hidden;border-radius:4px}
     .banner-box img{
-      position:absolute; left:0; top:0; width:206px; height:48px; object-fit:contain;
-      transform-origin:top left;
+      position:absolute;left:0;top:0;width:206px;height:48px;object-fit:contain;transform-origin:top left;
     }
-    .banner-placeholder{
-      width:100%; height:100%; display:flex; align-items:center; justify-content:center;
-      border:1px dashed #cbd5e1; color:#94a3b8; font-size:12px; border-radius:4px;
+    .banner-fallback{
+      width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      border:1px dashed #cbd5e1;color:#94a3b8;font-size:12px;border-radius:4px;
     }
-    .small-qr-btn{
-      background:transparent; border:none; cursor:pointer; padding-top:2px; flex-shrink:0;
-    }
-    .small-qr-grid{
-      display:grid; grid-template-columns:repeat(2,1fr); gap:3px; padding:2px;
-    }
-    .small-qr-grid span{
-      display:block; width:11px; height:11px; border:3px solid #000;
-    }
+    .small-qr-btn{background:transparent;border:none;cursor:pointer;padding-top:2px;flex-shrink:0}
+    .small-qr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;padding:2px}
+    .small-qr-grid span{display:block;width:11px;height:11px;border:3px solid #000}
     .small-qr-grid .special{position:relative}
-    .small-qr-grid .special::before,
-    .small-qr-grid .special::after{
-      content:""; position:absolute; width:2px; height:2px; background:#000;
+    .small-qr-grid .special::before,.small-qr-grid .special::after{
+      content:"";position:absolute;width:2px;height:2px;background:#000
     }
-    .small-qr-grid .special::before{left:1px; top:1px}
-    .small-qr-grid .special::after{right:1px; bottom:1px}
+    .small-qr-grid .special::before{left:1px;top:1px}
+    .small-qr-grid .special::after{right:1px;bottom:1px}
     .small-qr-label{
-      margin-top:2px; font-size:12px; line-height:1; color:#c96d47;
-      font-family:"KaiTi","STKaiti",serif;
+      margin-top:2px;font-size:12px;line-height:1;color:#c96d47;font-family:"KaiTi","STKaiti",serif
     }
-    .photo-wrap{margin-top:24px; display:flex; justify-content:center}
+    .photo-wrap{margin-top:24px;display:flex;justify-content:center}
     .photo-box{
-      width:118px; height:146px; overflow:hidden; background:#f1f1f1;
-      display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:12px;
+      width:118px;height:146px;overflow:hidden;background:#f1f1f1;
+      display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:12px;
     }
-    .photo-box img{width:100%; height:100%; object-fit:cover}
+    .photo-box img{width:100%;height:100%;object-fit:cover}
     .info-block{
-      margin-top:28px; padding-left:34px; color:#000; font-family:"KaiTi","STKaiti",serif;
+      margin-top:28px;padding-left:34px;color:#000;font-family:"KaiTi","STKaiti",serif;
     }
     .info-row{
-      margin-bottom:12px; display:flex; align-items:center; font-size:16px; line-height:1; white-space:nowrap;
+      margin-bottom:12px;display:flex;align-items:center;font-size:16px;line-height:1;white-space:nowrap;
     }
     .info-row:last-child{margin-bottom:0}
-    .info-label{display:inline-block; width:52px}
+    .info-label{display:inline-block;width:52px}
     .status-grid{
-      margin-top:58px; display:grid; grid-template-columns:1fr 1fr; text-align:center;
-      font-family:"KaiTi","STKaiti",serif;
+      margin-top:58px;display:grid;grid-template-columns:1fr 1fr;text-align:center;font-family:"KaiTi","STKaiti",serif
     }
     .status-col:first-child{border-right:1px solid #d1d1d1}
-    .status-title{font-size:16px; color:#000}
+    .status-title{font-size:16px;color:#000}
     .status-values{
-      margin-top:18px; color:var(--green-dark); font-size:16px; line-height:1;
-      display:flex; flex-direction:column; gap:6px;
+      margin-top:18px;color:var(--green-dark);font-size:16px;line-height:1;
+      display:flex;flex-direction:column;gap:6px;
     }
-    .eye-wrap{margin-top:18px; display:flex; justify-content:center; color:var(--green-dark)}
+    .eye-wrap{margin-top:18px;display:flex;justify-content:center;color:var(--green-dark)}
     .decor-pad{
-      position:absolute; right:18px; bottom:22px; width:54px; height:54px; border-radius:50%;
-      background:var(--green); box-shadow:0 4px 10px rgba(0,0,0,.16);
-      display:flex; align-items:center; justify-content:center;
-      pointer-events:none;
+      position:absolute;right:18px;bottom:22px;width:54px;height:54px;border-radius:50%;
+      background:var(--green);box-shadow:0 4px 10px rgba(0,0,0,.16);
+      display:flex;align-items:center;justify-content:center;pointer-events:none;
     }
-    .decor-pad .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:5px}
-    .decor-pad .dot{width:4px; height:4px; background:#fff; border-radius:50%}
+    .decor-pad .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+    .decor-pad .dot{width:4px;height:4px;background:#fff;border-radius:50%}
     .bottom-nav{
-      background:#f4f4f4; padding:8px 0 12px;
-      display:flex; align-items:center; justify-content:center; gap:72px; color:#64748b;
+      background:#f4f4f4;padding:8px 0 12px;
+      display:flex;align-items:center;justify-content:center;gap:72px;color:#64748b;
     }
-    .bottom-nav span{font-size:42px; line-height:1; font-weight:300}
-    .editor{
-      max-width:414px; margin:0 auto; background:#fff; padding:16px;
-    }
-    .panel{
-      border:1px solid #e2e8f0; border-radius:24px; padding:16px; display:flex; flex-direction:column; gap:12px;
-    }
-    .field label{
-      display:block; margin-bottom:6px; font-size:14px; font-weight:600; color:#334155;
-    }
-    .field input{
-      width:100%; border:1px solid #e2e8f0; border-radius:12px; padding:10px 12px; font-size:14px;
-      outline:none;
-    }
-    .field input[type="range"]{padding:0}
+    .bottom-nav span{font-size:42px;line-height:1;font-weight:300}
     .modal-mask{
-      position:fixed; inset:0; background:rgba(0,0,0,.28);
-      display:none; align-items:flex-start; justify-content:center; padding:92px 16px 16px; z-index:50;
+      position:fixed;inset:0;background:rgba(0,0,0,.28);
+      display:none;align-items:flex-start;justify-content:center;padding:92px 16px 16px;z-index:50;
     }
     .modal-mask.show{display:flex}
     .modal-card{
-      width:360px; max-width:92vw; border-radius:30px; background:#fff; box-shadow:0 20px 40px rgba(0,0,0,.18);
-      padding:18px 18px 28px; position:relative; overflow:hidden;
+      width:360px;max-width:92vw;border-radius:30px;background:#fff;
+      box-shadow:0 20px 40px rgba(0,0,0,.18);padding:18px 18px 28px;position:relative;overflow:hidden;
     }
     .modal-card .card-lines{opacity:.12}
     .close-btn{
-      position:absolute; right:18px; top:18px; width:48px; height:48px; border-radius:50%;
-      border:3px solid var(--gray); color:var(--gray); background:transparent; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; font-size:24px; line-height:1; z-index:2;
+      position:absolute;right:18px;top:18px;width:48px;height:48px;border-radius:50%;
+      border:3px solid var(--gray);color:var(--gray);background:transparent;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;z-index:2;
     }
-    .qr-stage{margin-top:52px; display:flex; justify-content:center}
+    .qr-stage{margin-top:52px;display:flex;justify-content:center}
     .qr-box{
-      width:286px; height:286px; background:#fff; display:flex; align-items:center; justify-content:center;
+      width:286px;height:286px;background:#fff;display:flex;align-items:center;justify-content:center
     }
-    #qrcode{width:286px; height:286px}
-    #qrcode img, #qrcode canvas{display:block !important; width:286px !important; height:286px !important}
-    .modal-tip{
-      margin-top:26px; text-align:center; font-size:16px; color:#d0d0d0;
-    }
+    #qrcode{width:286px;height:286px}
+    #qrcode img,#qrcode canvas{display:block!important;width:286px!important;height:286px!important}
+    .modal-tip{margin-top:26px;text-align:center;font-size:16px;color:#d0d0d0}
     .refresh-btn{
-      display:block; width:176px; height:54px; margin:26px auto 0; border:none; border-radius:14px;
-      background:var(--green); color:#fff; font-size:20px; font-weight:600; cursor:pointer;
+      display:block;width:176px;height:54px;margin:26px auto 0;border:none;border-radius:14px;
+      background:var(--green);color:#fff;font-size:20px;font-weight:600;cursor:pointer;
       box-shadow:0 2px 6px rgba(0,0,0,.12);
-    }
-    @media (max-width:480px){
-      body{padding:0}
-      .phone{border-radius:0; max-width:none}
-      .editor{max-width:none}
     }
   </style>
 </head>
 <body>
-  <div>
-    <div class="phone">
-      <div class="topbar">
-        <div class="left">‹</div>
+  <div class="phone">
+    <div class="topbar">
+      <div class="left">×</div>
+      <div class="title-wrap">
         <div class="title">电子校园卡</div>
-        <div class="more">···</div>
+        <div class="sub">saltedfishlx.github.io</div>
+      </div>
+      <div class="more">···</div>
+    </div>
+
+    <div class="scene">
+      <svg class="bg-dots" viewBox="0 0 414 760" preserveAspectRatio="none">
+        <path d="M52 32C40 130 130 190 290 280" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+        <path d="M362 44C294 120 280 230 206 320" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+        <path d="M376 256C338 392 366 522 332 718" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+        <path d="M74 650C140 548 182 470 278 392" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+      </svg>
+
+      <div class="lang-row">
+        <div class="lang-label">中文/En</div>
+        <div class="toggle"></div>
       </div>
 
-      <div class="scene">
-        <svg class="bg-dots" viewBox="0 0 414 760" preserveAspectRatio="none">
-          <path d="M52 32C40 130 130 190 290 280" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
-          <path d="M362 44C294 120 280 230 206 320" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
-          <path d="M376 256C338 392 366 522 332 718" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
-          <path d="M74 650C140 548 182 470 278 392" stroke="white" stroke-dasharray="2 6" stroke-width="1.4" fill="none" />
+      <div class="location-row">
+        <div class="location-inner">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+            <path d="M12 2.8c-3.52 0-6.38 2.8-6.38 6.26 0 4.58 5.14 10.77 5.36 11.03a1.33 1.33 0 0 0 2.04 0c.22-.26 5.36-6.45 5.36-11.03 0-3.46-2.86-6.26-6.38-6.26Zm0 9.03a2.77 2.77 0 1 1 0-5.54 2.77 2.77 0 0 1 0 5.54Z"></path>
+          </svg>
+          <span>南方科技大学</span>
+        </div>
+      </div>
+
+      <div class="campus-card">
+        <svg class="card-lines" viewBox="0 0 292 470" preserveAspectRatio="none">
+          <path d="M18 44C80 18 130 64 274 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M10 118C96 72 182 124 282 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M6 188C84 242 180 210 286 250" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M12 316C94 286 192 320 286 366" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
+          <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
         </svg>
 
-        <div class="lang-row">
-          <div class="lang-label">中文/En</div>
-          <div class="toggle"></div>
+        <div class="card-top">
+          <div class="banner-box">
+            <img id="bannerImage" alt="顶部标识" style="display:none;">
+            <div id="bannerFallback" class="banner-fallback">未配置顶部图片</div>
+          </div>
+
+          <button type="button" id="openQrBtn" class="small-qr-btn">
+            <div class="small-qr-grid">
+              <span></span><span></span><span></span><span class="special"></span>
+            </div>
+            <div class="small-qr-label">支付码</div>
+          </button>
         </div>
 
-        <div class="location-row">
-          <div class="location-inner">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-              <path d="M12 2.8c-3.52 0-6.38 2.8-6.38 6.26 0 4.58 5.14 10.77 5.36 11.03a1.33 1.33 0 0 0 2.04 0c.22-.26 5.36-6.45 5.36-11.03 0-3.46-2.86-6.26-6.38-6.26Zm0 9.03a2.77 2.77 0 1 1 0-5.54 2.77 2.77 0 0 1 0 5.54Z"></path>
-            </svg>
-            <span>南方科技大学</span>
-          </div>
-        </div>
-
-        <div class="campus-card">
-          <svg class="card-lines" viewBox="0 0 292 470" preserveAspectRatio="none">
-            <path d="M18 44C80 18 130 64 274 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-            <path d="M10 118C96 72 182 124 282 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-            <path d="M6 188C84 242 180 210 286 250" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-            <path d="M12 316C94 286 192 320 286 366" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-            <path d="M26 12C42 140 48 256 82 438" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-            <path d="M134 0C146 138 150 252 176 458" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-            <path d="M212 6C230 126 232 250 268 420" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
-          </svg>
-
-          <div class="card-top">
-            <div class="banner-box">
-              <img id="bannerImage" alt="顶部标识" style="display:none;">
-              <div id="bannerPlaceholder" class="banner-placeholder">上传顶部图片</div>
-            </div>
-
-            <button type="button" id="openQrBtn" class="small-qr-btn">
-              <div class="small-qr-grid">
-                <span></span><span></span><span></span><span class="special"></span>
-              </div>
-              <div class="small-qr-label">支付码</div>
-            </button>
-          </div>
-
-          <div class="photo-wrap">
-            <div class="photo-box">
-              <img id="photoImage" alt="证件照" style="display:none;">
-              <div id="photoPlaceholder">上传照片</div>
-            </div>
-          </div>
-
-          <div class="info-block">
-            <div class="info-row"><span class="info-label">姓名：</span><span id="nameText">林骁</span></div>
-            <div class="info-row"><span class="info-label">SID：</span><span id="sidText">12432437</span></div>
-            <div class="info-row"><span class="info-label">部门：</span><span id="deptText">机械与能源工程系</span></div>
-          </div>
-
-          <div class="status-grid">
-            <div class="status-col">
-              <div class="status-title">卡状态</div>
-              <div class="status-values">
-                <div>正常</div>
-                <div>可以入校</div>
-              </div>
-            </div>
-            <div class="status-col">
-              <div class="status-title">卡内余额</div>
-              <div class="eye-wrap">
-                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              </div>
-            </div>
+        <div class="photo-wrap">
+          <div class="photo-box">
+            <img id="photoImage" alt="证件照" style="display:none;">
+            <div id="photoFallback">未配置照片</div>
           </div>
         </div>
 
-        <div class="decor-pad" aria-hidden="true">
-          <div class="grid">
-            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <div class="info-block">
+          <div class="info-row"><span class="info-label">姓名：</span><span id="nameText">林骁</span></div>
+          <div class="info-row"><span class="info-label">SID：</span><span id="sidText">12432437</span></div>
+          <div class="info-row"><span class="info-label">部门：</span><span id="deptText">机械与能源工程系</span></div>
+        </div>
+
+        <div class="status-grid">
+          <div class="status-col">
+            <div class="status-title">卡状态</div>
+            <div class="status-values"><div>正常</div><div>可以入校</div></div>
+          </div>
+          <div class="status-col">
+            <div class="status-title">卡内余额</div>
+            <div class="eye-wrap">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="bottom-nav"><span>‹</span><span>›</span></div>
-    </div>
-
-    <div class="editor">
-      <div class="panel">
-        <div class="field">
-          <label for="bannerUpload">上传左上角图片</label>
-          <input id="bannerUpload" type="file" accept="image/*">
-        </div>
-        <div class="field">
-          <label for="bannerX">左上角图片左右位置</label>
-          <input id="bannerX" type="range" min="-120" max="120" value="0">
-        </div>
-        <div class="field">
-          <label for="bannerY">左上角图片上下位置</label>
-          <input id="bannerY" type="range" min="-60" max="60" value="0">
-        </div>
-        <div class="field">
-          <label for="bannerScale">左上角图片缩放</label>
-          <input id="bannerScale" type="range" min="50" max="180" value="100">
-        </div>
-        <div class="field">
-          <label for="photoUpload">上传照片</label>
-          <input id="photoUpload" type="file" accept="image/*">
-        </div>
-        <div class="field">
-          <label for="nameInput">姓名</label>
-          <input id="nameInput" type="text" value="林骁">
-        </div>
-        <div class="field">
-          <label for="sidInput">SID</label>
-          <input id="sidInput" type="text" value="12432437">
-        </div>
-        <div class="field">
-          <label for="deptInput">部门</label>
-          <input id="deptInput" type="text" value="机械与能源工程系">
+      <div class="decor-pad" aria-hidden="true">
+        <div class="grid">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
         </div>
       </div>
     </div>
+
+    <div class="bottom-nav"><span>‹</span><span>›</span></div>
   </div>
 
   <div id="qrModal" class="modal-mask">
-    <div class="modal-card" id="modalCard">
+    <div class="modal-card">
       <svg class="card-lines" viewBox="0 0 360 520" preserveAspectRatio="none">
         <path d="M18 44C100 18 180 64 338 22" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
         <path d="M10 118C96 72 202 124 350 96" stroke="#e2b8b0" stroke-width="1.1" fill="none" />
@@ -364,155 +283,108 @@ html = dedent(r"""
   </div>
 
   <script>
-    const state = {
+    const DEFAULTS = {
       name: "林骁",
       sid: "12432437",
       department: "机械与能源工程系",
+      bannerImg: "",
       bannerX: 0,
       bannerY: 0,
       bannerScale: 100,
-      qrSeed: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+      photoImg: ""
+    };
+
+    function loadConfig() {
+      try {
+        return { ...DEFAULTS, ...(JSON.parse(localStorage.getItem("campusCardConfig") || "{}")) };
+      } catch {
+        return { ...DEFAULTS };
+      }
+    }
+
+    const state = {
+      ...loadConfig(),
+      qrSeed: `${Date.now()}-${Math.random().toString(36).slice(2,10)}`
     };
 
     const el = {
-      nameInput: document.getElementById('nameInput'),
-      sidInput: document.getElementById('sidInput'),
-      deptInput: document.getElementById('deptInput'),
-      nameText: document.getElementById('nameText'),
-      sidText: document.getElementById('sidText'),
-      deptText: document.getElementById('deptText'),
-      photoUpload: document.getElementById('photoUpload'),
-      photoImage: document.getElementById('photoImage'),
-      photoPlaceholder: document.getElementById('photoPlaceholder'),
-      bannerUpload: document.getElementById('bannerUpload'),
-      bannerImage: document.getElementById('bannerImage'),
-      bannerPlaceholder: document.getElementById('bannerPlaceholder'),
-      bannerX: document.getElementById('bannerX'),
-      bannerY: document.getElementById('bannerY'),
-      bannerScale: document.getElementById('bannerScale'),
-      openQrBtn: document.getElementById('openQrBtn'),
-      qrModal: document.getElementById('qrModal'),
-      modalCard: document.getElementById('modalCard'),
-      closeQrBtn: document.getElementById('closeQrBtn'),
-      refreshQrBtn: document.getElementById('refreshQrBtn'),
-      qrcode: document.getElementById('qrcode')
+      bannerImage: document.getElementById("bannerImage"),
+      bannerFallback: document.getElementById("bannerFallback"),
+      photoImage: document.getElementById("photoImage"),
+      photoFallback: document.getElementById("photoFallback"),
+      nameText: document.getElementById("nameText"),
+      sidText: document.getElementById("sidText"),
+      deptText: document.getElementById("deptText"),
+      openQrBtn: document.getElementById("openQrBtn"),
+      qrModal: document.getElementById("qrModal"),
+      closeQrBtn: document.getElementById("closeQrBtn"),
+      refreshQrBtn: document.getElementById("refreshQrBtn"),
+      qrcode: document.getElementById("qrcode")
     };
 
-    function updateInfo() {
-      el.nameText.textContent = state.name || '';
-      el.sidText.textContent = state.sid || '';
-      el.deptText.textContent = state.department || '';
-    }
+    function applyConfig() {
+      el.nameText.textContent = state.name || "";
+      el.sidText.textContent = state.sid || "";
+      el.deptText.textContent = state.department || "";
 
-    function updateBannerTransform() {
-      el.bannerImage.style.transform =
-        `translate(${state.bannerX}px, ${state.bannerY}px) scale(${state.bannerScale / 100})`;
-    }
+      if (state.photoImg) {
+        el.photoImage.src = state.photoImg;
+        el.photoImage.style.display = "block";
+        el.photoFallback.style.display = "none";
+      } else {
+        el.photoImage.style.display = "none";
+        el.photoFallback.style.display = "block";
+      }
 
-    function readImage(file, callback) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => callback(reader.result);
-      reader.readAsDataURL(file);
+      if (state.bannerImg) {
+        el.bannerImage.src = state.bannerImg;
+        el.bannerImage.style.display = "block";
+        el.bannerFallback.style.display = "none";
+        el.bannerImage.style.transform =
+          `translate(${Number(state.bannerX)||0}px, ${Number(state.bannerY)||0}px) scale(${(Number(state.bannerScale)||100)/100})`;
+      } else {
+        el.bannerImage.style.display = "none";
+        el.bannerFallback.style.display = "flex";
+      }
     }
 
     function getQrValue() {
-      return `campus-pay-${state.sid || '00000000'}-${state.qrSeed}`;
+      return `campus-pay-${state.sid || "00000000"}-${state.qrSeed}`;
     }
 
     function drawQr() {
-      el.qrcode.innerHTML = '';
+      el.qrcode.innerHTML = "";
       new QRCode(el.qrcode, {
         text: getQrValue(),
         width: 286,
         height: 286,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
+        colorDark: "#000000",
+        colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.M
       });
     }
 
     function refreshQr() {
-      state.qrSeed = `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+      state.qrSeed = `${Date.now()}-${Math.random().toString(36).slice(2,12)}`;
       drawQr();
     }
 
-    el.nameInput.addEventListener('input', e => {
-      state.name = e.target.value;
-      updateInfo();
-    });
-
-    el.sidInput.addEventListener('input', e => {
-      state.sid = e.target.value;
-      updateInfo();
+    el.openQrBtn.addEventListener("click", () => {
+      el.qrModal.classList.add("show");
       drawQr();
     });
 
-    el.deptInput.addEventListener('input', e => {
-      state.department = e.target.value;
-      updateInfo();
+    el.closeQrBtn.addEventListener("click", () => {
+      el.qrModal.classList.remove("show");
     });
 
-    el.photoUpload.addEventListener('change', e => {
-      const file = e.target.files && e.target.files[0];
-      readImage(file, src => {
-        el.photoImage.src = src;
-        el.photoImage.style.display = 'block';
-        el.photoPlaceholder.style.display = 'none';
-      });
+    el.qrModal.addEventListener("click", (e) => {
+      if (e.target === el.qrModal) el.qrModal.classList.remove("show");
     });
 
-    el.bannerUpload.addEventListener('change', e => {
-      const file = e.target.files && e.target.files[0];
-      readImage(file, src => {
-        el.bannerImage.src = src;
-        el.bannerImage.style.display = 'block';
-        el.bannerPlaceholder.style.display = 'none';
-        updateBannerTransform();
-      });
-    });
+    el.refreshQrBtn.addEventListener("click", refreshQr);
 
-    el.bannerX.addEventListener('input', e => {
-      state.bannerX = Number(e.target.value);
-      updateBannerTransform();
-    });
-
-    el.bannerY.addEventListener('input', e => {
-      state.bannerY = Number(e.target.value);
-      updateBannerTransform();
-    });
-
-    el.bannerScale.addEventListener('input', e => {
-      state.bannerScale = Number(e.target.value);
-      updateBannerTransform();
-    });
-
-    el.openQrBtn.addEventListener('click', () => {
-      el.qrModal.classList.add('show');
-      drawQr();
-    });
-
-    el.closeQrBtn.addEventListener('click', () => {
-      el.qrModal.classList.remove('show');
-    });
-
-    el.qrModal.addEventListener('click', e => {
-      if (e.target === el.qrModal) {
-        el.qrModal.classList.remove('show');
-      }
-    });
-
-    el.refreshQrBtn.addEventListener('click', refreshQr);
-
-    updateInfo();
-    updateBannerTransform();
+    applyConfig();
   </script>
 </body>
 </html>
-""")
-
-path = "/mnt/data/campus_card_github_ready.html"
-with open(path, "w", encoding="utf-8") as f:
-    f.write(html)
-
-print(path)
